@@ -1,5 +1,5 @@
 ========================
-comment
+Comment
 ========================
 
 // Some comment that is
@@ -9,6 +9,16 @@ comment
 (source_file
   (comment))
 
+========================
+Empty comment
+========================
+
+//
+
+---
+
+(source_file
+  (comment))
 
 ========================
 Multiline comment
