@@ -1,9 +1,4 @@
-// TODO: support `tag(attr='hello' + goodbye)`
-// TODO: support multiple levels of function calls in pug js attrs: `tag(attr=true.call(false.toString()))`
-//       I think something a bit like:
-//         value = ($) => seq(/.*/, optional(seq('(', $.value, ')')))
-//       where the content of brackets is another instance of the same node. Does treesitter even support this?
-//       The entire node will have to be aliased as $.javascript, this will just make sure no pug is matched too.
+// TODO: support multiline js attributes: `input(name=JSON\n.stringify('test'))`, https://pugjs.org/language/attributes.html
 // TODO: don't break if there are singular { or # in content
 // TODO: support #[p(prop)] nested pug syntax
 // TODO: support Angular's weird `let x as first; let y of items` template directive syntax.
@@ -13,7 +8,7 @@
 // TODO: rework regexes. There are too many different regexes that all handle different special cases.
 module.exports = grammar({
   name: "pug",
-  externals: ($) => [$._newline, $._indent, $._dedent],
+  externals: ($) => [$._newline, $._indent, $._dedent, $._attr_js, $._attr_string],
   rules: {
     source_file: ($) => repeat(
       choice(
@@ -59,8 +54,7 @@ module.exports = grammar({
         $.children,
       ),
 
-    _each_js: ($) =>
-      alias(/[\w_]+/, $.javascript),
+    _each_js: ($) => alias($._attr_js, $.javascript),
 
     iteration_variable: ($) =>
       seq(
@@ -73,8 +67,7 @@ module.exports = grammar({
         ),
       ),
 
-    iteration_iterator: ($) =>
-      alias(/[^\n]+/, $.javascript),
+    iteration_iterator: ($) => alias($._attr_js, $.javascript),
 
     _each_else: ($) =>
       seq(
@@ -112,11 +105,11 @@ module.exports = grammar({
               seq(
                 repeat(
                   seq(
-                    alias($._pug_attributes, $.attribute),
+                    alias($._attribute_value, $.attribute),
                     ',',
                   )
                 ),
-                alias($._pug_attributes, $.attribute),
+                alias($._attribute_value, $.attribute),
               )
             ),
             ')',
@@ -180,7 +173,7 @@ module.exports = grammar({
     extends: ($) =>
       seq(
         alias('extends', $.keyword),
-        alias(/[^\n]+/, $.filename),
+        alias(/[^\n]+/, $.filename), // The filename is the last thing on the line, so just match 'til the end
       ),
 
     filter: ($) =>
@@ -192,8 +185,8 @@ module.exports = grammar({
           optional(
             alias($.filter_content, $.content),
           ),
+        ),
       ),
-    ),
     filter_name: () => /[\w-]+/,
     filter_content: ($) =>
       choice(
@@ -227,7 +220,7 @@ module.exports = grammar({
               ),
               $.keyword,
             ),
-            alias($._un_delimited_javascript, $.javascript),
+            alias($._attr_js, $.javascript),
           ),
           alias('else', $.keyword),
         ),
@@ -238,7 +231,7 @@ module.exports = grammar({
       prec.right(
         seq(
           alias('case', $.keyword),
-          alias($._un_delimited_javascript_line, $.javascript),
+          alias($._attr_js, $.javascript),
           $._newline,
           $._indent,
           repeat1(
@@ -266,8 +259,7 @@ module.exports = grammar({
       choice(
         seq(
           alias('when', $.keyword),
-          // `when`s don't work with properly with objects, so removing : from regex is fine.
-          alias(/[^:\n]+?/, $.javascript),
+          alias($._attr_js, $.javascript),
         ),
         alias('default', $.keyword),
       ),
@@ -355,7 +347,14 @@ module.exports = grammar({
     attributes: ($) =>
       seq(
         "(",
-        repeat(seq($.attribute, choice(",", " "))),
+        repeat(
+          prec.right(
+            seq(
+              $.attribute,
+              optional(","),
+            ),
+          ),
+        ),
         optional($.attribute),
         ")"
       ),
@@ -364,85 +363,11 @@ module.exports = grammar({
         $._attribute,
         $._angular_attribute,
       ),
-    _ternary_attribute_value: ($) =>
-      seq(
-        alias(
-          token(
-            seq(
-              /[^'"`{\[][^?]+?/,
-              '?',
-              /[^)?]+?/,
-              choice(
-                /[^ )]*?/,
-                choice(
-                  /'(?:[^'\\]|\\.)*'/,
-                  /"(?:[^"\\]|\\.)*"/,
-                  /`(?:[^`\\]|\\.)*`/,
-                ),
-              ),
-            )
-          ),
-          $.javascript
-        ),
+    _attribute_value: ($) =>
+      choice(
+        alias($._attr_string, $.string),
+        alias($._attr_js, $.javascript),
       ),
-    _string_attribute_value: ($) =>
-      $.quoted_attribute_value,
-    _variable_attribute_value: ($) =>
-      seq(
-        alias(
-          // No function calls, nor spaces allowed in javascript attributes
-          /[^'"`{\[][^ ,()]+(\([^)]*?\))?/,
-          $.javascript
-        ),
-      ),
-    _object_attribute_value: ($) =>
-      seq(
-        alias(
-          token(
-            seq(
-              "{",
-              /([^\[\]()]*?(, ?)?)*?/,
-              "}",
-            ),
-          ),
-          $.javascript,
-        ),
-      ),
-    _template_attribute_value: ($) =>
-      seq(
-        alias(
-          token(
-            seq(
-              "`",
-              /(?:[^`\\]|\\.)*/,
-              "`",
-            ),
-          ),
-          $.javascript,
-        ),
-      ),
-    _array_attribute_value: ($) =>
-      seq(
-        alias(
-          token(
-            seq(
-              "[",
-              /[^\[\]()]*?/,
-              "]",
-            ),
-          ),
-          $.javascript,
-        ),
-      ),
-      _pug_attributes: ($) =>
-        choice(
-          $._string_attribute_value,
-          $._ternary_attribute_value,
-          $._variable_attribute_value,
-          $._array_attribute_value,
-          $._object_attribute_value,
-          $._template_attribute_value,
-        ),
     _attribute: ($) =>
       seq(
         $.attribute_name,
@@ -450,188 +375,195 @@ module.exports = grammar({
         optional(
           seq(
             '=',
-            $._pug_attributes
+            $._attribute_value
           )
         ),
       ),
     _angular_attribute: ($) =>
       seq(
         alias($.angular_attribute_name, $.attribute_name),
-        optional(seq("=", $.quoted_javascript))
-      ),
-
-    children: ($) => prec.right(
-      seq(
-        $._indent,
-        repeat1($._children_choice),
-        optional($._dedent),
-      ),
-    ),
-    // TODO: add all other types of element in here too
-    _children_choice: ($) =>
-      prec(1,
-        choice(
-          $.buffered_code,
-          $.case,
-          $.comment,
-          $.conditional,
-          $.doctype,
-          $.pipe,
-          $.script_block,
-          $.tag,
-          $.unbuffered_code,
-          $.unescaped_buffered_code,
-          $.filter,
-          $.block_definition,
-          $.block_append,
-          $.block_prepend,
-          $.extends,
-          $.each,
-          $.while,
-          $.include,
-          $._newline,
-        ),
-      ),
-
-    comment: ($) =>
-      choice(
-        $._comment,
-        $._comment_not_first_line,
-      ),
-    _comment: ($) =>
-      prec.left(
-        seq(
-          choice("//", "//-"),
-          $._comment_content,
-          $._newline,
-          optional(
-            seq(
-              $._indent,
-              repeat1(
-                seq(
-                  $._comment_content,
-                  $._newline,
-                ),
-              ),
-              $._dedent,
-            ),
+        optional(
+          seq(
+            "=",
+            alias($._attr_js, $.javascript),
           ),
         ),
       ),
-    _comment_not_first_line: ($) =>
-      seq(
-        choice("//", "//-"),
-        $._newline,
-        $._indent,
-        repeat1(
+
+        children: ($) => prec.right(
           seq(
+            $._indent,
+            repeat1($._children_choice),
+            optional($._dedent),
+          ),
+        ),
+        _children_choice: ($) =>
+        prec(1,
+          choice(
+            $.buffered_code,
+            $.case,
+            $.comment,
+            $.conditional,
+            $.doctype,
+            $.pipe,
+            $.script_block,
+            $.tag,
+            $.unbuffered_code,
+            $.unescaped_buffered_code,
+            $.filter,
+            $.block_definition,
+            $.block_append,
+            $.block_prepend,
+            $.extends,
+            $.each,
+            $.while,
+            $.include,
+            $._newline,
+          ),
+        ),
+
+        comment: ($) =>
+        choice(
+          $._comment,
+          $._comment_not_first_line,
+        ),
+        _comment: ($) =>
+        prec.left(
+          seq(
+            choice("//", "//-"),
             $._comment_content,
             $._newline,
-          ),
-        ),
-        $._dedent,
-      ),
-
-    tag_name: () => /\w(?:[-\w]*\w)?/,
-    class: () => /\.[_a-z0-9\-]*[_a-zA-Z][_a-zA-Z0-9\-]*/i,
-    id: () => /#[\w-]+/,
-
-    angular_attribute_name: () =>
-      choice(
-        /\[[\w@\-:\.]+\]/, // [input]
-        /\([\w@\-:\.]+\)/, // (output)
-        /\[\([\w@\-:\.]+\)\]/, // [(both)]
-        /\*[\w@\-:\.]+/, // *directive
-      ),
-    attribute_name: () => /#?[\w@\-:]+/,
-
-    quoted_javascript: ($) =>
-      choice(
-        seq("'", optional(alias(/(?:[^'\\]|\\.)+/, $.javascript)), "'"),
-        seq('"', optional(alias(/(?:[^"\\]|\\.)+/, $.javascript)), '"'),
-      ),
-    quoted_attribute_value: ($) =>
-      choice(
-        seq("'", optional(alias(/(?:[^'\\]|\\.)+/, $.attribute_value)), "'"),
-        seq('"', optional(alias(/(?:[^"\\]|\\.)+/, $.attribute_value)), '"'),
-      ),
-
-    content: () =>
-      prec.right(
-        repeat1(
-          seq(
-            /[^\n{#]+?/,
-            optional('#'),
-            optional('{')
-          ),
-        ),
-      ),
-    _comment_content: () => /[^\n]*/,
-    _content_or_javascript: ($) =>
-      repeat1(
-        choice(
-          seq(
-            "#{",
-            alias($._delimited_javascript, $.javascript),
-            "}"
-          ),
-          seq(
-            "{{",
-            alias($._delimited_javascript, $.javascript),
-            "}}"
-          ),
-          $.content
-        ),
-      ),
-
-    // TODO: can _delimited_javascript and _un_delimited_javascript be merged?
-    _delimited_javascript: () => /[^\n}]+/,
-    // I only want this node to be exposed sometimes
-    _un_delimited_javascript: ($) => $._un_delimited_javascript_line,
-    _un_delimited_javascript_line: ($) => /(.)+?/,
-    _un_delimited_javascript_multiline: ($) => repeat1(prec(1, $._un_delimited_javascript_line)),
-    _single_line_buf_code: ($) =>
-      prec.left(
-        seq(
-          alias($._un_delimited_javascript, $.javascript),
-          choice(
-            seq(
-              $._newline,
-              $._indent,
-              repeat1(
-                choice(
-                  $.tag,
-                  $._newline,
+            optional(
+              seq(
+                $._indent,
+                repeat1(
+                  seq(
+                    $._comment_content,
+                    $._newline,
+                  ),
                 ),
+                $._dedent,
               ),
-              $._dedent,
             ),
-            $._newline,
           ),
-          optional($._dedent),
         ),
-      ),
-    _multi_line_buf_code: ($) =>
-      alias(seq(
-        $._un_delimited_javascript_multiline,
-      ), $.javascript),
-    unbuffered_code: ($) =>
-      prec.right(
+        _comment_not_first_line: ($) =>
         seq(
-          '-',
-          token.immediate(/( |\t)*/),
-          choice(
+          choice("//", "//-"),
+          $._newline,
+          $._indent,
+          repeat1(
             seq(
-              $._single_line_buf_code,
-            ),
-            seq(
+              $._comment_content,
               $._newline,
-              $._indent,
-              $._multi_line_buf_code,
             ),
           ),
-          optional($._dedent),
+          $._dedent,
+        ),
+
+        tag_name: () => /\w(?:[-\w]*\w)?/,
+        class: () => /\.[_a-z0-9\-]*[_a-zA-Z][_a-zA-Z0-9\-]*/,
+        id: () => /#[\w-]+/,
+
+        angular_attribute_name: () =>
+          choice(
+            /\[[\w@\-:\.]+\]/, // [input]
+            /\([\w@\-:\.]+\)/, // (output)
+            /\[\([\w@\-:\.]+\)\]/, // [(both)]
+            /\*[\w@\-:\.]+/, // *directive
+          ),
+        attribute_name: () => /#?[\w@\-:]+/,
+
+        quoted_javascript: ($) =>
+          choice(
+            seq("'", optional(alias(/(?:[^'\\]|\\.)+/, $.javascript)), "'"),
+            seq('"', optional(alias(/(?:[^"\\]|\\.)+/, $.javascript)), '"'),
+          ),
+        quoted_attribute_value: ($) =>
+          choice(
+            seq("'", optional(alias(/(?:[^'\\]|\\.)+/, $.attribute_value)), "'"),
+            seq('"', optional(alias(/(?:[^"\\]|\\.)+/, $.attribute_value)), '"'),
+          ),
+
+        content: () =>
+        prec.right(
+          repeat1(
+            seq(
+              /[^\n{#]+?/,
+              optional('#'),
+              optional('{')
+            ),
+          ),
+        ),
+        _comment_content: () => /[^\n]*/,
+        _content_or_javascript: ($) =>
+        repeat1(
+          prec.right(
+            choice(
+              seq(
+                "#{",
+                alias($._delimited_javascript, $.javascript),
+                "}"
+              ),
+              seq(
+                "{{",
+                alias($._delimited_javascript, $.javascript),
+                "}}"
+              ),
+              $.content
+            ),
+          ),
+        ),
+
+        // TODO: can _delimited_javascript and _un_delimited_javascript be merged?
+        _delimited_javascript: () => /[^\n}]+/,
+        // I only want this node to be exposed sometimes
+        _un_delimited_javascript: ($) => $._un_delimited_javascript_line,
+        _un_delimited_javascript_line: ($) => /(.)+?/,
+        _un_delimited_javascript_multiline: ($) => repeat1(prec(1, $._un_delimited_javascript_line)),
+        _single_line_buf_code: ($) =>
+        prec.left(
+          seq(
+            alias($._un_delimited_javascript, $.javascript),
+            choice(
+              seq(
+                $._newline,
+                $._indent,
+                repeat1(
+                  choice(
+                    $.tag,
+                    $._newline,
+                  ),
+                ),
+                $._dedent,
+              ),
+              $._newline,
+            ),
+            optional($._dedent),
+          ),
+        ),
+        _multi_line_buf_code: ($) =>
+        alias(
+          seq($._un_delimited_javascript_multiline),
+          $.javascript
+        ),
+        unbuffered_code: ($) =>
+        prec.right(
+          seq(
+            '-',
+            token.immediate(/( |\t)*/),
+            choice(
+              seq(
+                $._single_line_buf_code,
+              ),
+              seq(
+                $._newline,
+                $._indent,
+                $._multi_line_buf_code,
+              ),
+            ),
+            optional($._dedent),
+          )
         )
-      )
   },
 });

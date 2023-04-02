@@ -1,66 +1,8 @@
 ================================================================================
-Tag
+Tag with variable
 ================================================================================
 
-some-tag
-
---------------------------------------------------------------------------------
-
-(source_file
-  (tag
-    (tag_name)))
-
-================================================================================
-Tag with classes
-================================================================================
-
-some-tag.some-class.other-class
-
---------------------------------------------------------------------------------
-
-(source_file
-  (tag
-    (tag_name)
-    (class)
-    (class)))
-
-================================================================================
-Tag with id
-================================================================================
-
-some-tag#some-id
-
---------------------------------------------------------------------------------
-
-(source_file
-  (tag
-    (tag_name)
-    (id)))
-
-================================================================================
-Tag with attributes
-================================================================================
-
-some-tag(attr, other-attr="test")
-
---------------------------------------------------------------------------------
-
-(source_file
-  (tag
-    (tag_name)
-    (attributes
-      (attribute
-        (attribute_name))
-      (attribute
-        (attribute_name)
-        (string)))))
-
-================================================================================
-Tag with variable attribute followed by attribute containing question mark
-================================================================================
-
-div(attr=VAR)
-div(attr="?")
+tag(attr=VARIABLE, attr=VARIABLE)
 
 --------------------------------------------------------------------------------
 
@@ -70,19 +12,32 @@ div(attr="?")
     (attributes
       (attribute
         (attribute_name)
-        (javascript))))
+        (javascript))
+      (attribute
+        (attribute_name)
+        (javascript)))))
+
+================================================================================
+Tag with number
+================================================================================
+
+tag(attr=1)
+
+--------------------------------------------------------------------------------
+
+(source_file
   (tag
     (tag_name)
     (attributes
       (attribute
         (attribute_name)
-        (string)))))
+        (javascript)))))
 
 ================================================================================
-Tag attributes with escaped quotes
+Tag with double quote string
 ================================================================================
 
-some-tag(attr='test\'test', other-attr="test\"test", template-attr=`test\`test`)
+tag(attr="string", attr="string")
 
 --------------------------------------------------------------------------------
 
@@ -95,171 +50,32 @@ some-tag(attr='test\'test', other-attr="test\"test", template-attr=`test\`test`)
         (string))
       (attribute
         (attribute_name)
+        (string)))))
+
+================================================================================
+Tag with single quote string
+================================================================================
+
+tag(attr='string', attr='string')
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (tag
+    (tag_name)
+    (attributes
+      (attribute
+        (attribute_name)
         (string))
       (attribute
         (attribute_name)
-        (javascript)))))
-
-================================================================================
-vue-attribute modifier
-================================================================================
-
-some-tag(@click.prevent.stop="click")
-
---------------------------------------------------------------------------------
-
-(source_file
-  (tag
-    (tag_name)
-    (attributes
-      (attribute
-        (attribute_name)
-        (attribute_modifier)
-        (attribute_modifier)
         (string)))))
 
 ================================================================================
-Tag with content
+Tag with template string
 ================================================================================
 
-some-tag(attr) content
-
---------------------------------------------------------------------------------
-
-(source_file
-  (tag
-    (tag_name)
-    (attributes
-      (attribute
-        (attribute_name)))
-    (content)))
-
-================================================================================
-Tag with javascript almost interpolation content
-================================================================================
-
-some-tag co{n#te{nt {text} content
-
---------------------------------------------------------------------------------
-
-(source_file
-  (tag
-    (tag_name)
-    (content)))
-
-================================================================================
-Tag with javascript interpolation content
-================================================================================
-
-some-tag content #{text} content
-
---------------------------------------------------------------------------------
-
-(source_file
-  (tag
-    (tag_name)
-    (content)
-    (javascript)
-    (content)))
-
-================================================================================
-Wrapped Tag with content
-================================================================================
-
-div.card: div.card-body content
-
---------------------------------------------------------------------------------
-
-(source_file
-  (tag
-    (tag_name)
-    (class)
-    (tag
-      (tag_name)
-      (class)
-      (content))))
-
-================================================================================
-Tag with children
-================================================================================
-
-some-tag
-  child-one content
-  child-two(attr)
-
---------------------------------------------------------------------------------
-
-(source_file
-  (tag
-    (tag_name)
-    (children
-      (tag
-        (tag_name)
-        (content))
-      (tag
-        (tag_name)
-        (attributes
-          (attribute
-            (attribute_name)))))))
-
-================================================================================
-Doctype html
-================================================================================
-
-doctype html
-doctype strict
-
---------------------------------------------------------------------------------
-
-(source_file
-  (doctype
-    (doctype_name))
-  (doctype
-    (doctype_name)))
-
-================================================================================
-Tag with ternary attribute with variables
-================================================================================
-
-tag(attr=authenticated ? good : bad)
-
---------------------------------------------------------------------------------
-
-(source_file
-  (tag
-    (tag_name)
-    (attributes
-      (attribute
-        (attribute_name)
-        (javascript)))))
-
-================================================================================
-Tag with ternary attribute with strings
-================================================================================
-
-tag(attr=value attr=cond ? "the answer is: 26" : "how are you?" attr="string")
-
---------------------------------------------------------------------------------
-
-(source_file
-  (tag
-    (tag_name)
-    (attributes
-      (attribute
-        (attribute_name)
-        (javascript))
-      (attribute
-        (attribute_name)
-        (javascript))
-      (attribute
-        (attribute_name)
-        (string)))))
-
-================================================================================
-Tag with ternary attribute with arrays
-================================================================================
-
-tag(attr=condition ? true : [1,2,3], attr=VAR)
+tag(attr=`string ${variable} string`, attr=`string ${variable} string`)
 
 --------------------------------------------------------------------------------
 
@@ -275,10 +91,10 @@ tag(attr=condition ? true : [1,2,3], attr=VAR)
         (javascript)))))
 
 ================================================================================
-Tag with ternary attribute with objects
+Tag with array
 ================================================================================
 
-tag(attr=condition ? {key: 'value', key: value, key: [1,2,3]} : [1,2,3], attr=VAR)
+tag(attr=[1, 2, 3], attr=[1,2,3])
 
 --------------------------------------------------------------------------------
 
@@ -294,26 +110,10 @@ tag(attr=condition ? {key: 'value', key: value, key: [1,2,3]} : [1,2,3], attr=VA
         (javascript)))))
 
 ================================================================================
-Tag with variable attribute
+Tag with object
 ================================================================================
 
-tag(attr=authenticated)
-
---------------------------------------------------------------------------------
-
-(source_file
-  (tag
-    (tag_name)
-    (attributes
-      (attribute
-        (attribute_name)
-        (javascript)))))
-
-================================================================================
-Tag with object attribute
-================================================================================
-
-tag(attr={key: 'value', 'other': 2}, other=variable)
+tag(attr={key: 'value', key: 'value'}, attr={key: 'value', key: 'value'})
 
 --------------------------------------------------------------------------------
 
@@ -329,67 +129,10 @@ tag(attr={key: 'value', 'other': 2}, other=variable)
         (javascript)))))
 
 ================================================================================
-Tag with function call attr
+Tag with function call
 ================================================================================
 
-tag(attr=true.txString(), yther='hello')
-
---------------------------------------------------------------------------------
-
-(source_file
-  (tag
-    (tag_name)
-    (attributes
-      (attribute
-        (attribute_name)
-        (javascript))
-      (attribute
-        (attribute_name)
-        (string)))))
-
-================================================================================
-Tag with template string attribute
-================================================================================
-
-tag(attr=`hello ${variable} hello` other='hello')
-
---------------------------------------------------------------------------------
-
-(source_file
-  (tag
-    (tag_name)
-    (attributes
-      (attribute
-        (attribute_name)
-        (javascript))
-      (attribute
-        (attribute_name)
-        (string)))))
-
-================================================================================
-Tag with array attribute
-================================================================================
-
-tag(attr=['one', 'two', 'three'] other='hello')
-
---------------------------------------------------------------------------------
-
-(source_file
-  (tag
-    (tag_name)
-    (attributes
-      (attribute
-        (attribute_name)
-        (javascript))
-      (attribute
-        (attribute_name)
-        (string)))))
-
-================================================================================
-Tag with multiple code attributes
-================================================================================
-
-tag(attr=classes attr=['bing'])
+tag(attr=getValue(), attr=getValue())
 
 --------------------------------------------------------------------------------
 
@@ -405,10 +148,61 @@ tag(attr=classes attr=['bing'])
         (javascript)))))
 
 ================================================================================
-Tag with expression attributes
+Tag with nested function call
 ================================================================================
 
-tag(attr=x + 10 attr=array || default, [attr]=cond ? {key: value} : results * 100, attr=false)
+tag(attr=getValue(getOtherValue()))
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (tag
+    (tag_name)
+    (attributes
+      (attribute
+        (attribute_name)
+        (javascript)))))
+
+================================================================================
+Tag with chained function call
+================================================================================
+
+tag(attr=getValue(getOtherValue().getValue()).getType())
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (tag
+    (tag_name)
+    (attributes
+      (attribute
+        (attribute_name)
+        (javascript)))))
+
+================================================================================
+Tag with a deeply nested and chained function call attribute
+================================================================================
+
+tag(attr=getValue(getOtherValue(variable.getType(   valueKey   )).getValue('this_user')).getType(2 ^^ 6 || 9))
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (tag
+    (tag_name)
+    (attributes
+      (attribute
+        (attribute_name)
+        (javascript)))))
+
+================================================================================
+Tag with deeply nested and chained function call attributes
+================================================================================
+
+tag(
+  attr=getValue(getOtherValue(variable.getType(   valueKey   )).getValue('this_user')).getType(2 ^^ 6 || 9)
+  otherattr=getValue(getOtherValue(variable.getType(   valueKey   )).getValue('this_user')).getType(2 ^^ 6 || 9)
+)
 
 --------------------------------------------------------------------------------
 
@@ -421,7 +215,20 @@ tag(attr=x + 10 attr=array || default, [attr]=cond ? {key: value} : results * 10
         (javascript))
       (attribute
         (attribute_name)
-        (javascript))
+        (javascript)))))
+
+================================================================================
+Tag with operator on variables
+================================================================================
+
+tag(attr=number + number, attr=getValue() * 2)
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (tag
+    (tag_name)
+    (attributes
       (attribute
         (attribute_name)
         (javascript))
@@ -430,94 +237,369 @@ tag(attr=x + 10 attr=array || default, [attr]=cond ? {key: value} : results * 10
         (javascript)))))
 
 ================================================================================
-Tag with dot content same line
+Tag with operator on variables without comma separation
 ================================================================================
 
-tag.
-  text
-
-tag
+tag(attr=number + number attr=value || value)
 
 --------------------------------------------------------------------------------
 
 (source_file
   (tag
     (tag_name)
-    (children
-      (content)))
-  (tag
-    (tag_name)))
+    (attributes
+      (attribute
+        (attribute_name)
+        (javascript))
+      (attribute
+        (attribute_name)
+        (javascript)))))
 
 ================================================================================
-Tag with dot content newline
+Tag with operator on strings
 ================================================================================
 
-tag
-  .
-    text
-  tag
+tag(attr='string' + "string")
 
 --------------------------------------------------------------------------------
 
 (source_file
   (tag
     (tag_name)
-    (children
-      (content)))
-  (tag
-    (tag_name)))
+    (attributes
+      (attribute
+        (attribute_name)
+        (javascript)))))
 
 ================================================================================
-Tag with multiple levels followed by root tag
+Tag operator on strings and variables
 ================================================================================
 
-tag
-  tag
-    tag
-
-tag
+tag(attr='hello' + goodbye)
 
 --------------------------------------------------------------------------------
 
 (source_file
   (tag
     (tag_name)
-    (children
-      (tag
-        (tag_name)
-        (children
-          (tag
-            (tag_name))))))
-  (tag
-    (tag_name)))
+    (attributes
+      (attribute
+        (attribute_name)
+        (javascript)))))
 
 ================================================================================
-Tag with self-closing slash
+Tag with operator on mixed types
 ================================================================================
 
-some-tag/
-  img(src='foo')/
-    img/
-
-img
+tag(attr='string' + "string" * number || [1, 2, 3] - {key: 'value'}, attr=25 && 2)
 
 --------------------------------------------------------------------------------
 
 (source_file
   (tag
     (tag_name)
-    (self_close_slash)
-    (children
-      (tag
-        (tag_name)
-        (attributes
-          (attribute
-            (attribute_name)
-            (string)))
-        (self_close_slash)
-        (children
-          (tag
-            (tag_name)
-            (self_close_slash))))))
+    (attributes
+      (attribute
+        (attribute_name)
+        (javascript))
+      (attribute
+        (attribute_name)
+        (javascript)))))
+
+================================================================================
+Tag with operator on mixed types without comma separation
+================================================================================
+
+tag(attr='string' + "string" * number || [1, 2, 3] - {key: 'value'} attr=25 && 2)
+
+--------------------------------------------------------------------------------
+
+(source_file
   (tag
-    (tag_name)))
+    (tag_name)
+    (attributes
+      (attribute
+        (attribute_name)
+        (javascript))
+      (attribute
+        (attribute_name)
+        (javascript)))))
+
+================================================================================
+Tag with ternary with operator
+================================================================================
+
+tag(attr=variable + 10 ? [1, 2, 3] || false : "string?string:" * 100, attr=condition ? true : false)
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (tag
+    (tag_name)
+    (attributes
+      (attribute
+        (attribute_name)
+        (javascript))
+      (attribute
+        (attribute_name)
+        (javascript)))))
+
+================================================================================
+Tag with ternary with operator without comma separation
+================================================================================
+
+tag(attr=variable + 10 ? [1, 2, 3] || false : "string?string:" * 100 attr=condition ? true : false)
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (tag
+    (tag_name)
+    (attributes
+      (attribute
+        (attribute_name)
+        (javascript))
+      (attribute
+        (attribute_name)
+        (javascript)))))
+
+================================================================================
+Tag with basic operators
+================================================================================
+
+tag(attr=2+8)
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (tag
+    (tag_name)
+    (attributes
+      (attribute
+        (attribute_name)
+        (javascript)))))
+
+================================================================================
+Tag with operators with whitespace
+================================================================================
+
+tag(attr=2 + 8)
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (tag
+    (tag_name)
+    (attributes
+      (attribute
+        (attribute_name)
+        (javascript)))))
+
+================================================================================
+Tag with chained operators
+================================================================================
+
+tag(attr=(2+8)*4*8+2)
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (tag
+    (tag_name)
+    (attributes
+      (attribute
+        (attribute_name)
+        (javascript)))))
+
+================================================================================
+Tag with array lookup
+================================================================================
+
+tag(attr=array_lookup[2])
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (tag
+    (tag_name)
+    (attributes
+      (attribute
+        (attribute_name)
+        (javascript)))))
+
+================================================================================
+Tag with basic function call
+================================================================================
+
+tag(attr=function_call())
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (tag
+    (tag_name)
+    (attributes
+      (attribute
+        (attribute_name)
+        (javascript)))))
+
+================================================================================
+Tag with function call with array param
+================================================================================
+
+tag(attr=one(two([])))
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (tag
+    (tag_name)
+    (attributes
+      (attribute
+        (attribute_name)
+        (javascript)))))
+
+================================================================================
+Tag with function call with nested complex function calls
+================================================================================
+
+tag(attr=one(two(123,455)))
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (tag
+    (tag_name)
+    (attributes
+      (attribute
+        (attribute_name)
+        (javascript)))))
+
+================================================================================
+Tag function call with nested complex function calls with whitespace
+================================================================================
+
+tag(attr=one(two(123,   455)))
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (tag
+    (tag_name)
+    (attributes
+      (attribute
+        (attribute_name)
+        (javascript)))))
+
+================================================================================
+Tag with complex whitespace function call with comma-less second param
+================================================================================
+
+tag(attr=one(two(123,   455)) other=123)
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (tag
+    (tag_name)
+    (attributes
+      (attribute
+        (attribute_name)
+        (javascript))
+      (attribute
+        (attribute_name)
+        (javascript)))))
+
+================================================================================
+Tag with complex whitespace function call with comma second param
+================================================================================
+
+tag(attr=one(two(123,   455)), other=123)
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (tag
+    (tag_name)
+    (attributes
+      (attribute
+        (attribute_name)
+        (javascript))
+      (attribute
+        (attribute_name)
+        (javascript)))))
+
+================================================================================
+Tag with large spaces between comma-less attributes
+================================================================================
+
+tag(attr=one(123   ,455)    test)
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (tag
+    (tag_name)
+    (attributes
+      (attribute
+        (attribute_name)
+        (javascript))
+      (attribute
+        (attribute_name)))))
+
+================================================================================
+Tag with several operator attributes with large spaces
+================================================================================
+
+tag(attr=hello(((12355)))+2    another=2 +2)
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (tag
+    (tag_name)
+    (attributes
+      (attribute
+        (attribute_name)
+        (javascript))
+      (attribute
+        (attribute_name)
+        (javascript)))))
+
+================================================================================
+Tag with several operator attributes with large spaces and arrays
+================================================================================
+
+tag(attr=hello(12355)+2    another=2 +[23+12])
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (tag
+    (tag_name)
+    (attributes
+      (attribute
+        (attribute_name)
+        (javascript))
+      (attribute
+        (attribute_name)
+        (javascript)))))
+
+================================================================================
+Tag with function call with missing parameters
+================================================================================
+
+tag(attr=hello(123,,55)+2   another=2)
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (tag
+    (tag_name)
+    (attributes
+      (attribute
+        (attribute_name)
+        (javascript))
+      (attribute
+        (attribute_name)
+        (javascript)))))

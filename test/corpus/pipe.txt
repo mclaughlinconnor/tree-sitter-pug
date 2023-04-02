@@ -1,21 +1,22 @@
-========================
+================================================================================
 Tag with piped content
-=========================
+================================================================================
 
 div
   |Content here
 
----
+--------------------------------------------------------------------------------
 
 (source_file
   (tag
     (tag_name)
     (children
-      (pipe (content)))))
+      (pipe
+        (content)))))
 
-========================
+================================================================================
 Tag with blank piped content + tag
-=========================
+================================================================================
 
 div
   |
@@ -23,22 +24,22 @@ div
   |
   div
 
----
+--------------------------------------------------------------------------------
 
 (source_file
   (tag
     (tag_name)
     (children
-     (pipe)
-     (pipe (content))
-     (pipe)
-     (tag (tag_name))
-    )
-))
+      (pipe)
+      (pipe
+        (content))
+      (pipe)
+      (tag
+        (tag_name)))))
 
-========================
+================================================================================
 Tag with double blank piped content + tag
-=========================
+================================================================================
 
 div
   |
@@ -48,25 +49,24 @@ div
   |
   div
 
----
+--------------------------------------------------------------------------------
 
 (source_file
   (tag
     (tag_name)
     (children
-     (pipe)
-     (pipe)
-     (pipe (content))
-     (pipe)
-     (pipe)
-     (tag (tag_name))
-    )
-))
+      (pipe)
+      (pipe)
+      (pipe
+        (content))
+      (pipe)
+      (pipe)
+      (tag
+        (tag_name)))))
 
-
-========================
+================================================================================
 Tags with pipes in between with no content
-=========================
+================================================================================
 
 a content
 |
@@ -76,7 +76,7 @@ a content
 | 
 a content
 
----
+--------------------------------------------------------------------------------
 
 (source_file
   (tag
@@ -94,9 +94,9 @@ a content
     (tag_name)
     (content)))
 
-========================
+================================================================================
 Complex tags with pipes in between with no content
-=========================
+================================================================================
 
 a(href='//google.com') Google
 |
@@ -106,7 +106,7 @@ a(class='button' href='//google.com') Google
 |
 a(class='button', href='//google.com') Google
 
----
+--------------------------------------------------------------------------------
 
 (source_file
   (tag
@@ -114,8 +114,7 @@ a(class='button', href='//google.com') Google
     (attributes
       (attribute
         (attribute_name)
-        (quoted_attribute_value
-          (attribute_value))))
+        (string)))
     (content))
   (pipe)
   (pipe)
@@ -124,12 +123,10 @@ a(class='button', href='//google.com') Google
     (attributes
       (attribute
         (attribute_name)
-        (quoted_attribute_value
-          (attribute_value)))
+        (string))
       (attribute
         (attribute_name)
-        (quoted_attribute_value
-          (attribute_value))))
+        (string)))
     (content))
   (pipe)
   (pipe)
@@ -138,48 +135,49 @@ a(class='button', href='//google.com') Google
     (attributes
       (attribute
         (attribute_name)
-        (quoted_attribute_value
-          (attribute_value)))
+        (string))
       (attribute
         (attribute_name)
-        (quoted_attribute_value
-          (attribute_value))))
+        (string)))
     (content)))
 
-
-========================
+================================================================================
 Tag with piped content
-=========================
+================================================================================
 
 div
   |Content here
 
----
+--------------------------------------------------------------------------------
 
 (source_file
   (tag
     (tag_name)
     (children
-      (pipe (content)))))
+      (pipe
+        (content)))))
 
-========================
+================================================================================
 Content Javascript
-=========================
+================================================================================
 
 div
   |Content {{ some JS code here }} Content
 
----
+--------------------------------------------------------------------------------
 
 (source_file
   (tag
     (tag_name)
     (children
-    (pipe (content) (javascript) (content)))))
+      (pipe
+        (content)
+        (javascript)
+        (content)))))
 
-========================
+================================================================================
 Multiline with dot
-=========================
+================================================================================
 
 div.
   Content here
@@ -188,7 +186,7 @@ div.
 
 tag
 
----
+--------------------------------------------------------------------------------
 
 (source_file
   (tag

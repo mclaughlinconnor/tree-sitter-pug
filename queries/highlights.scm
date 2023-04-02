@@ -22,7 +22,7 @@
 (id) @attribute
 (class) @attribute
 
-(quoted_attribute_value) @string
+(string) @string
 (attribute_name) @symbol
 (
   (attribute_name) @keyword
