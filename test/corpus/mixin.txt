@@ -73,8 +73,7 @@ tag
   (mixin_use
     (mixin_name)
     (attribute
-      (quoted_attribute_value
-        (attribute_value))))
+      (string)))
   (tag
     (tag_name)))
 
@@ -93,8 +92,7 @@ tag
   (mixin_use
     (mixin_name)
     (attribute
-      (quoted_attribute_value
-        (attribute_value)))
+      (string))
     (attribute
       (javascript))
     (attribute

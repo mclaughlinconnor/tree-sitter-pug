@@ -19,7 +19,7 @@ tag
 Include with filter
 ================================================================================
 
-include:filter:filter folder/file.pug
+include:f
 
 tag
 
