@@ -494,15 +494,12 @@ module.exports = grammar({
       ),
 
     comment: ($) =>
-      choice(
-        $._comment,
-        $._comment_not_first_line,
-      ),
-    _comment: ($) =>
       prec.left(
         seq(
           choice("//", "//-"),
-          $._comment_content,
+          optional(
+            $._comment_content,
+          ),
           $._newline,
           optional(
             seq(
@@ -517,19 +514,6 @@ module.exports = grammar({
             ),
           ),
         ),
-      ),
-    _comment_not_first_line: ($) =>
-      seq(
-        choice("//", "//-"),
-        $._newline,
-        $._indent,
-        repeat1(
-          seq(
-            $._comment_content,
-            $._newline,
-          ),
-        ),
-        $._dedent,
       ),
 
     tag_name: () => /\w(?:[-\w]*\w)?/,
