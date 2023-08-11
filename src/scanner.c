@@ -463,10 +463,17 @@ bool tree_sitter_pug_external_scanner_scan(void *payload, TSLexer *lexer,
             lexer->result_symbol = NEWLINE;
             return true;
         }
-        return false;
     }
 
-    if (lexer->lookahead && lexer->get_column(lexer) == 0) {
+    // If a token is expecting a DEDENT to end, it's still valid if we've
+    // reached the end insetad.
+    if (valid_symbols[DEDENT] && lexer->eof(lexer)) {
+        lexer->result_symbol = DEDENT;
+        return true;
+    }
+
+    if (lexer->lookahead) {
+        uint32_t starting_column = lexer->get_column(lexer);
         uint32_t indent_length = 0;
 
         // Indent tokens are zero width
@@ -484,14 +491,14 @@ bool tree_sitter_pug_external_scanner_scan(void *payload, TSLexer *lexer,
             }
         }
 
-        if (indent_length > VEC_BACK(scanner->indents) &&
-            valid_symbols[INDENT]) {
+
+        if (indent_length > VEC_BACK(scanner->indents) && valid_symbols[INDENT] && starting_column == 0) {
             VEC_PUSH(scanner->indents, indent_length);
             lexer->result_symbol = INDENT;
             return true;
         }
-        if (indent_length < VEC_BACK(scanner->indents) &&
-            valid_symbols[DEDENT]) {
+
+        if (indent_length < VEC_BACK(scanner->indents) && valid_symbols[DEDENT]) {
             VEC_POP(scanner->indents);
             lexer->result_symbol = DEDENT;
             return true;

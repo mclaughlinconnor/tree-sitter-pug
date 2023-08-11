@@ -284,7 +284,6 @@ module.exports = grammar({
             // There are newlines between each when case, but not the last when
             $._newline,
           ),
-          optional($._dedent)
         ),
       ),
     unescaped_buffered_code: ($) =>
@@ -406,7 +405,7 @@ module.exports = grammar({
           seq(
             $._indent,
             repeat1($._children_choice),
-            optional($._dedent),
+            $._dedent,
           ),
         ),
         _children_choice: ($) =>
@@ -496,6 +495,7 @@ module.exports = grammar({
           ),
         ),
         _comment_content: () => anythingOrNothingExceptNewlines,
+        _delimited_javascript: () => /[^\n}]+/,
         _content_or_javascript: ($) =>
         repeat1(
           prec.right(
@@ -515,12 +515,6 @@ module.exports = grammar({
           ),
         ),
 
-        // TODO: can _delimited_javascript and _un_delimited_javascript be merged?
-        // TODO: this is a mess, will probably have to use the external scanner more here
-        _delimited_javascript: () => /[^\n}]+/,
-        // I only want this node to be exposed sometimes
-        _un_delimited_javascript_line: ($) => /(.)+?/,
-        _un_delimited_javascript_multiline: ($) => repeat1(prec(1, $._un_delimited_javascript_line)),
         _single_line_buf_code: ($) =>
         prec.left(
           seq(
@@ -539,13 +533,7 @@ module.exports = grammar({
               ),
               $._newline,
             ),
-            optional($._dedent),
           ),
-        ),
-        _multi_line_buf_code: ($) =>
-        alias(
-          seq($._un_delimited_javascript_multiline),
-          $.javascript
         ),
         unbuffered_code: ($) =>
         prec.right(
@@ -559,10 +547,20 @@ module.exports = grammar({
               seq(
                 $._newline,
                 $._indent,
-                $._multi_line_buf_code,
+                seq(
+                  alias(
+                    repeat1(
+                      seq(
+                        anythingExceptNewlines,
+                        $._newline,
+                      ),
+                    ),
+                    $.javascript,
+                  ),
+                  $._dedent,
+                )
               ),
             ),
-            optional($._dedent),
           )
         )
   },
