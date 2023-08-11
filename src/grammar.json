@@ -56,11 +56,7 @@
           },
           {
             "type": "SYMBOL",
-            "name": "block_append"
-          },
-          {
-            "type": "SYMBOL",
-            "name": "block_prepend"
+            "name": "block_use"
           },
           {
             "type": "SYMBOL",
@@ -583,7 +579,7 @@
         }
       ]
     },
-    "block_append": {
+    "block_use": {
       "type": "SEQ",
       "members": [
         {
@@ -606,43 +602,17 @@
         {
           "type": "ALIAS",
           "content": {
-            "type": "STRING",
-            "value": "append"
-          },
-          "named": true,
-          "value": "keyword"
-        },
-        {
-          "type": "SYMBOL",
-          "name": "_block_content"
-        }
-      ]
-    },
-    "block_prepend": {
-      "type": "SEQ",
-      "members": [
-        {
-          "type": "ALIAS",
-          "content": {
             "type": "CHOICE",
             "members": [
               {
                 "type": "STRING",
-                "value": "block"
+                "value": "append"
               },
               {
-                "type": "BLANK"
+                "type": "STRING",
+                "value": "prepend"
               }
             ]
-          },
-          "named": true,
-          "value": "keyword"
-        },
-        {
-          "type": "ALIAS",
-          "content": {
-            "type": "STRING",
-            "value": "prepend"
           },
           "named": true,
           "value": "keyword"
@@ -1607,11 +1577,7 @@
           },
           {
             "type": "SYMBOL",
-            "name": "block_append"
-          },
-          {
-            "type": "SYMBOL",
-            "name": "block_prepend"
+            "name": "block_use"
           },
           {
             "type": "SYMBOL",

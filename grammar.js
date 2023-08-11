@@ -43,8 +43,7 @@ module.exports = grammar({
         $.pipe,
         $.filter,
         $.block_definition,
-        $.block_append,
-        $.block_prepend,
+        $.block_use,
         $.extends,
         $.mixin_definition,
         $.mixin_use,
@@ -177,16 +176,10 @@ module.exports = grammar({
         alias('block', $.keyword),
         $._block_content,
       ),
-    block_append: ($) =>
+    block_use: ($) =>
       seq(
         alias(optional('block'), $.keyword),
-        alias('append', $.keyword),
-        $._block_content,
-      ),
-    block_prepend: ($) =>
-      seq(
-        alias(optional('block'), $.keyword),
-        alias('prepend', $.keyword),
+        alias(choice('append', 'prepend'), $.keyword),
         $._block_content,
       ),
     extends: ($) =>
@@ -431,8 +424,7 @@ module.exports = grammar({
             $.unescaped_buffered_code,
             $.filter,
             $.block_definition,
-            $.block_append,
-            $.block_prepend,
+            $.block_use,
             $.extends,
             $.each,
             $.while,

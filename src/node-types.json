@@ -47,29 +47,6 @@
     }
   },
   {
-    "type": "block_append",
-    "named": true,
-    "fields": {},
-    "children": {
-      "multiple": true,
-      "required": true,
-      "types": [
-        {
-          "type": "block_name",
-          "named": true
-        },
-        {
-          "type": "children",
-          "named": true
-        },
-        {
-          "type": "keyword",
-          "named": true
-        }
-      ]
-    }
-  },
-  {
     "type": "block_definition",
     "named": true,
     "fields": {},
@@ -93,7 +70,7 @@
     }
   },
   {
-    "type": "block_prepend",
+    "type": "block_use",
     "named": true,
     "fields": {},
     "children": {
@@ -166,15 +143,11 @@
       "required": false,
       "types": [
         {
-          "type": "block_append",
-          "named": true
-        },
-        {
           "type": "block_definition",
           "named": true
         },
         {
-          "type": "block_prepend",
+          "type": "block_use",
           "named": true
         },
         {
@@ -560,15 +533,11 @@
       "required": false,
       "types": [
         {
-          "type": "block_append",
-          "named": true
-        },
-        {
           "type": "block_definition",
           "named": true
         },
         {
-          "type": "block_prepend",
+          "type": "block_use",
           "named": true
         },
         {
