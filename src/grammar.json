@@ -960,18 +960,6 @@
                 "name": "_newline"
               }
             ]
-          },
-          {
-            "type": "CHOICE",
-            "members": [
-              {
-                "type": "SYMBOL",
-                "name": "_dedent"
-              },
-              {
-                "type": "BLANK"
-              }
-            ]
           }
         ]
       }
@@ -1507,16 +1495,8 @@
             }
           },
           {
-            "type": "CHOICE",
-            "members": [
-              {
-                "type": "SYMBOL",
-                "name": "_dedent"
-              },
-              {
-                "type": "BLANK"
-              }
-            ]
+            "type": "SYMBOL",
+            "name": "_dedent"
           }
         ]
       }
@@ -1809,6 +1789,10 @@
       "type": "PATTERN",
       "value": "[^\\n]*"
     },
+    "_delimited_javascript": {
+      "type": "PATTERN",
+      "value": "[^\\n}]+"
+    },
     "_content_or_javascript": {
       "type": "REPEAT1",
       "content": {
@@ -1869,25 +1853,6 @@
         }
       }
     },
-    "_delimited_javascript": {
-      "type": "PATTERN",
-      "value": "[^\\n}]+"
-    },
-    "_un_delimited_javascript_line": {
-      "type": "PATTERN",
-      "value": "(.)+?"
-    },
-    "_un_delimited_javascript_multiline": {
-      "type": "REPEAT1",
-      "content": {
-        "type": "PREC",
-        "value": 1,
-        "content": {
-          "type": "SYMBOL",
-          "name": "_un_delimited_javascript_line"
-        }
-      }
-    },
     "_single_line_buf_code": {
       "type": "PREC_LEFT",
       "value": 0,
@@ -1944,35 +1909,9 @@
                 "name": "_newline"
               }
             ]
-          },
-          {
-            "type": "CHOICE",
-            "members": [
-              {
-                "type": "SYMBOL",
-                "name": "_dedent"
-              },
-              {
-                "type": "BLANK"
-              }
-            ]
           }
         ]
       }
-    },
-    "_multi_line_buf_code": {
-      "type": "ALIAS",
-      "content": {
-        "type": "SEQ",
-        "members": [
-          {
-            "type": "SYMBOL",
-            "name": "_un_delimited_javascript_multiline"
-          }
-        ]
-      },
-      "named": true,
-      "value": "javascript"
     },
     "unbuffered_code": {
       "type": "PREC_RIGHT",
@@ -2015,22 +1954,36 @@
                     "name": "_indent"
                   },
                   {
-                    "type": "SYMBOL",
-                    "name": "_multi_line_buf_code"
+                    "type": "SEQ",
+                    "members": [
+                      {
+                        "type": "ALIAS",
+                        "content": {
+                          "type": "REPEAT1",
+                          "content": {
+                            "type": "SEQ",
+                            "members": [
+                              {
+                                "type": "PATTERN",
+                                "value": "[^\\n]+"
+                              },
+                              {
+                                "type": "SYMBOL",
+                                "name": "_newline"
+                              }
+                            ]
+                          }
+                        },
+                        "named": true,
+                        "value": "javascript"
+                      },
+                      {
+                        "type": "SYMBOL",
+                        "name": "_dedent"
+                      }
+                    ]
                   }
                 ]
-              }
-            ]
-          },
-          {
-            "type": "CHOICE",
-            "members": [
-              {
-                "type": "SYMBOL",
-                "name": "_dedent"
-              },
-              {
-                "type": "BLANK"
               }
             ]
           }
