@@ -5,7 +5,26 @@
 //       documentation here: https://angular.io/guide/structural-directives#structural-directive-syntax-reference
 //       Currently, it is just parsed as $.javascript, but this is not valid javascript, so parsing is broken,
 //       but doesn't break any of the pug syntax tree.
-// TODO: rework regexes. There are too many different regexes that all handle different special cases.
+
+// Taken from https://github.com/pugjs/pug/blob/master/packages/pug-lexer/index.js
+const classNameRegex = /\.[_a-z0-9\-]*[_a-zA-Z][_a-zA-Z0-9\-]*/;
+const idNameRegex = /#[\w-]+/;
+const tagNameRegex = /\w([-\w]*\w)?/; // removed colon because it conflicts with other rules
+
+const mixinAttrubuteRegex = /\w+/;
+const filterNameRegex = /[\w\-]+/;
+const htmlAttributeRegex = /#?[\w@\-:]+/;
+const angularAttributeRegexString = '[\\w@\\-:\\.]+';
+
+const whitespace = /\s+/;
+
+const doubleQuoteStringContent = /((?:[^"\\]|\\.)*)/;
+const singleQuoteStringContent = /((?:[^'\\]|\\.)*)/;
+const templateQuoteStringContent = /((?:[^`\\]|\\.)*)/;
+
+const anythingExceptNewlines = /[^\n]+/;
+const anythingOrNothingExceptNewlines = /[^\n]*/;
+
 module.exports = grammar({
   name: "pug",
   externals: ($) => [$._newline, $._indent, $._dedent, $._attr_js, $._attr_string],
@@ -43,7 +62,7 @@ module.exports = grammar({
       seq(
         alias('include', $.keyword),
         optional($.filter),
-        alias(/[^\n]+/, $.filename),
+        alias(anythingExceptNewlines, $.filename),
       ),
 
     while: ($) =>
@@ -131,11 +150,11 @@ module.exports = grammar({
           seq(
             repeat(
               seq(
-                alias(/\w+/, $.attribute_name),
+                alias(mixinAttrubuteRegex, $.attribute_name),
                 ',',
               )
             ),
-            alias(/\w+/, $.attribute_name),
+            alias(mixinAttrubuteRegex, $.attribute_name),
           )
         ),
         ')',
@@ -173,7 +192,7 @@ module.exports = grammar({
     extends: ($) =>
       seq(
         alias('extends', $.keyword),
-        alias(/[^\n]+/, $.filename), // The filename is the last thing on the line, so just match 'til the end
+        alias(anythingExceptNewlines, $.filename), // The filename is the last thing on the line, so just match 'til the end
       ),
 
     filter: ($) =>
@@ -187,20 +206,20 @@ module.exports = grammar({
           ),
         ),
       ),
-    filter_name: () => /[\w-]+/,
+    filter_name: () => filterNameRegex,
     filter_content: ($) =>
       choice(
         $.filter,
         seq(
-          /( |\t)+/,
-          /[^\n]*/,
+          whitespace,
+          anythingExceptNewlines
         ),
         seq(
           $._newline,
           $._indent,
           repeat(
             seq(
-              /[^\n]*/,
+              anythingOrNothingExceptNewlines,
               $._newline,
             ),
           ),
@@ -293,7 +312,7 @@ module.exports = grammar({
         alias(
           repeat1(
             seq(
-              optional(/[^\n]+/),
+              optional(anythingExceptNewlines),
               $._newline,
             )
           ),
@@ -461,29 +480,18 @@ module.exports = grammar({
           $._dedent,
         ),
 
-        tag_name: () => /\w(?:[-\w]*\w)?/,
-        class: () => /\.[_a-z0-9\-]*[_a-zA-Z][_a-zA-Z0-9\-]*/,
-        id: () => /#[\w-]+/,
+        tag_name: () => tagNameRegex,
+        class: () => classNameRegex,
+        id: () => idNameRegex,
 
         angular_attribute_name: () =>
-          choice(
-            /\[[\w@\-:\.]+\]/, // [input]
-            /\([\w@\-:\.]+\)/, // (output)
-            /\[\([\w@\-:\.]+\)\]/, // [(both)]
-            /\*[\w@\-:\.]+/, // *directive
-          ),
-        attribute_name: () => /#?[\w@\-:]+/,
-
-        quoted_javascript: ($) =>
-          choice(
-            seq("'", optional(alias(/(?:[^'\\]|\\.)+/, $.javascript)), "'"),
-            seq('"', optional(alias(/(?:[^"\\]|\\.)+/, $.javascript)), '"'),
-          ),
-        quoted_attribute_value: ($) =>
-          choice(
-            seq("'", optional(alias(/(?:[^'\\]|\\.)+/, $.attribute_value)), "'"),
-            seq('"', optional(alias(/(?:[^"\\]|\\.)+/, $.attribute_value)), '"'),
-          ),
+        choice(
+          new RegExp('\\[' + angularAttributeRegexString + '\\]'), // [input]
+          new RegExp('\\(' + angularAttributeRegexString + '\\)'), // (output)
+          new RegExp('\\[\\(' + angularAttributeRegexString + '\\)\\]'), // [(both)]
+          new RegExp('\\*' + angularAttributeRegexString), // *directive
+        ),
+        attribute_name: () => htmlAttributeRegex,
 
         content: () =>
         prec.right(
@@ -495,7 +503,7 @@ module.exports = grammar({
             ),
           ),
         ),
-        _comment_content: () => /[^\n]*/,
+        _comment_content: () => anythingOrNothingExceptNewlines,
         _content_or_javascript: ($) =>
         repeat1(
           prec.right(
@@ -516,15 +524,15 @@ module.exports = grammar({
         ),
 
         // TODO: can _delimited_javascript and _un_delimited_javascript be merged?
+        // TODO: this is a mess, will probably have to use the external scanner more here
         _delimited_javascript: () => /[^\n}]+/,
         // I only want this node to be exposed sometimes
-        _un_delimited_javascript: ($) => $._un_delimited_javascript_line,
         _un_delimited_javascript_line: ($) => /(.)+?/,
         _un_delimited_javascript_multiline: ($) => repeat1(prec(1, $._un_delimited_javascript_line)),
         _single_line_buf_code: ($) =>
         prec.left(
           seq(
-            alias($._un_delimited_javascript, $.javascript),
+            alias(anythingExceptNewlines, $.javascript),
             choice(
               seq(
                 $._newline,
