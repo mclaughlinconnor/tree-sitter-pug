@@ -790,19 +790,11 @@
     "named": false
   },
   {
-    "type": "\"",
-    "named": false
-  },
-  {
     "type": "#",
     "named": false
   },
   {
     "type": "#{",
-    "named": false
-  },
-  {
-    "type": "'",
     "named": false
   },
   {
@@ -847,10 +839,6 @@
   },
   {
     "type": "attribute_modifier",
-    "named": true
-  },
-  {
-    "type": "attribute_value",
     "named": true
   },
   {

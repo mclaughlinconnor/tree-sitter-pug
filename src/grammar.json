@@ -724,7 +724,7 @@
     },
     "filter_name": {
       "type": "PATTERN",
-      "value": "[\\w-]+"
+      "value": "[\\w\\-]+"
     },
     "filter_content": {
       "type": "CHOICE",
@@ -738,11 +738,11 @@
           "members": [
             {
               "type": "PATTERN",
-              "value": "( |\\t)+"
+              "value": "\\s+"
             },
             {
               "type": "PATTERN",
-              "value": "[^\\n]*"
+              "value": "[^\\n]+"
             }
           ]
         },
@@ -1764,7 +1764,7 @@
     },
     "tag_name": {
       "type": "PATTERN",
-      "value": "\\w(?:[-\\w]*\\w)?"
+      "value": "\\w([-\\w]*\\w)?"
     },
     "class": {
       "type": "PATTERN",
@@ -1798,136 +1798,6 @@
     "attribute_name": {
       "type": "PATTERN",
       "value": "#?[\\w@\\-:]+"
-    },
-    "quoted_javascript": {
-      "type": "CHOICE",
-      "members": [
-        {
-          "type": "SEQ",
-          "members": [
-            {
-              "type": "STRING",
-              "value": "'"
-            },
-            {
-              "type": "CHOICE",
-              "members": [
-                {
-                  "type": "ALIAS",
-                  "content": {
-                    "type": "PATTERN",
-                    "value": "(?:[^'\\\\]|\\\\.)+"
-                  },
-                  "named": true,
-                  "value": "javascript"
-                },
-                {
-                  "type": "BLANK"
-                }
-              ]
-            },
-            {
-              "type": "STRING",
-              "value": "'"
-            }
-          ]
-        },
-        {
-          "type": "SEQ",
-          "members": [
-            {
-              "type": "STRING",
-              "value": "\""
-            },
-            {
-              "type": "CHOICE",
-              "members": [
-                {
-                  "type": "ALIAS",
-                  "content": {
-                    "type": "PATTERN",
-                    "value": "(?:[^\"\\\\]|\\\\.)+"
-                  },
-                  "named": true,
-                  "value": "javascript"
-                },
-                {
-                  "type": "BLANK"
-                }
-              ]
-            },
-            {
-              "type": "STRING",
-              "value": "\""
-            }
-          ]
-        }
-      ]
-    },
-    "quoted_attribute_value": {
-      "type": "CHOICE",
-      "members": [
-        {
-          "type": "SEQ",
-          "members": [
-            {
-              "type": "STRING",
-              "value": "'"
-            },
-            {
-              "type": "CHOICE",
-              "members": [
-                {
-                  "type": "ALIAS",
-                  "content": {
-                    "type": "PATTERN",
-                    "value": "(?:[^'\\\\]|\\\\.)+"
-                  },
-                  "named": true,
-                  "value": "attribute_value"
-                },
-                {
-                  "type": "BLANK"
-                }
-              ]
-            },
-            {
-              "type": "STRING",
-              "value": "'"
-            }
-          ]
-        },
-        {
-          "type": "SEQ",
-          "members": [
-            {
-              "type": "STRING",
-              "value": "\""
-            },
-            {
-              "type": "CHOICE",
-              "members": [
-                {
-                  "type": "ALIAS",
-                  "content": {
-                    "type": "PATTERN",
-                    "value": "(?:[^\"\\\\]|\\\\.)+"
-                  },
-                  "named": true,
-                  "value": "attribute_value"
-                },
-                {
-                  "type": "BLANK"
-                }
-              ]
-            },
-            {
-              "type": "STRING",
-              "value": "\""
-            }
-          ]
-        }
-      ]
     },
     "content": {
       "type": "PREC_RIGHT",
@@ -2037,10 +1907,6 @@
       "type": "PATTERN",
       "value": "[^\\n}]+"
     },
-    "_un_delimited_javascript": {
-      "type": "SYMBOL",
-      "name": "_un_delimited_javascript_line"
-    },
     "_un_delimited_javascript_line": {
       "type": "PATTERN",
       "value": "(.)+?"
@@ -2065,8 +1931,8 @@
           {
             "type": "ALIAS",
             "content": {
-              "type": "SYMBOL",
-              "name": "_un_delimited_javascript"
+              "type": "PATTERN",
+              "value": "[^\\n]+"
             },
             "named": true,
             "value": "javascript"
