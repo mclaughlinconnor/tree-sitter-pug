@@ -6,6 +6,7 @@
   "scripts": {
     "generate": "tree-sitter generate",
     "parse": "tree-sitter parse",
+    "prettier": "prettier --check .",
     "test": "tree-sitter generate && tree-sitter test"
   },
   "author": "",

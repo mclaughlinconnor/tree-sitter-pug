@@ -1,0 +1,15 @@
+---
+FormatStyle: llvm
+Checks: >
+  -*,
+  bugprone-*,
+  google-*,
+  misc-*,
+  modernize-*,
+  performance-*,
+  portability-*,
+  readability-*,
+  -readability-function-cognitive-complexity,
+  -readability-identifier-length,
+
+WarningsAsErrors: "*"

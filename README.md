@@ -19,4 +19,3 @@ How to run & test:
 npm install -g tree-sitter-cli
 tree-sitter generate && tree-sitter test
 ```
-

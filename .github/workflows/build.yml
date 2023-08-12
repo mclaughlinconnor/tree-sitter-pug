@@ -1,4 +1,3 @@
-
 name: build
 
 on:
@@ -12,10 +11,20 @@ jobs:
     name: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+      - uses: cpp-linter/cpp-linter-action@v2
+        with:
+          files-changed-only: false
+          ignore: ./parser.c|./tree_sitter
+          repo-root: ./src
+          tidy-checks:
+      - name: Validate cpp-linter
+        if: steps.linter.outputs.checks-failed > 0
+        run: echo "Some files failed the linting checks"; exit 1
       - uses: actions/setup-node@v2
         with:
-          node-version: '14'
-      - run: npm install
-      - run: npm test
-
+          node-version: "14"
+      - name: Install dependencies
+        run: yarn --frozen-lockfile
+      - run: yarn prettier
+      - run: yarn test

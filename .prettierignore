@@ -1,0 +1,9 @@
+# Ignore artifacts:
+.github
+bindings
+build
+node_modules
+queries
+src/*.json
+src/treesitter
+test
