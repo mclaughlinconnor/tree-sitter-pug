@@ -1,0 +1,8 @@
+# Ignore artifacts:
+bindings
+build
+node_modules
+queries
+test
+src/*.json
+src/treesitter
