@@ -1,10 +1,12 @@
 // TODO: support multiline js attributes: `input(name=JSON\n.stringify('test'))`, https://pugjs.org/language/attributes.html
+//       completely lost on how to do this, but it's a feature of pug we should support eventually
 // TODO: don't break if there are singular { or # in content
 // TODO: support #[p(prop)] nested pug syntax
-// TODO: support Angular's weird `let x as first; let y of items` template directive syntax.
-//       documentation here: https://angular.io/guide/structural-directives#structural-directive-syntax-reference
-//       Currently, it is just parsed as $.javascript, but this is not valid javascript, so parsing is broken,
-//       but doesn't break any of the pug syntax tree.
+// TODO: remove all angular interpolation handling and replace with injections
+//       will require using the parser for all tag content, which isn't ideal
+//       requires that curly brackets are handled in content properly otherwise
+//       `tag content {{interpolate}} content` will break because of { in the content
+//       will have to support pug `tag #{}` too
 
 // Taken from https://github.com/pugjs/pug/blob/master/packages/pug-lexer/index.js
 const classNameRegex = /\.[_a-z0-9\-]*[_a-zA-Z][_a-zA-Z0-9\-]*/;
@@ -279,7 +281,7 @@ module.exports = grammar({
         optional($.attribute),
         ")"
       ),
-    attribute: ($) => choice($._attribute, $._angular_attribute),
+    attribute: ($) => $._attribute,
     _attribute_value: ($) =>
       choice(alias($._attr_string, $.string), alias($._attr_js, $.javascript)),
     _attribute: ($) =>
@@ -287,11 +289,6 @@ module.exports = grammar({
         $.attribute_name,
         optional(repeat1(seq(".", alias(/[\w@\-:]+/, $.attribute_modifier)))),
         optional(seq("=", $._attribute_value))
-      ),
-    _angular_attribute: ($) =>
-      seq(
-        alias($.angular_attribute_name, $.attribute_name),
-        optional(seq("=", alias($._attr_js, $.javascript)))
       ),
 
     children: ($) =>
@@ -350,14 +347,15 @@ module.exports = grammar({
     class: () => classNameRegex,
     id: () => idNameRegex,
 
-    angular_attribute_name: () =>
+    _angular_attribute_name: () =>
       choice(
         new RegExp("\\[" + angularAttributeRegexString + "\\]"), // [input]
         new RegExp("\\(" + angularAttributeRegexString + "\\)"), // (output)
         new RegExp("\\[\\(" + angularAttributeRegexString + "\\)\\]"), // [(both)]
         new RegExp("\\*" + angularAttributeRegexString) // *directive
       ),
-    attribute_name: () => htmlAttributeRegex,
+    attribute_name: ($) =>
+      choice(htmlAttributeRegex, $._angular_attribute_name),
 
     content: () =>
       prec.right(repeat1(seq(/[^\n{#]+?/, optional("#"), optional("{")))),
