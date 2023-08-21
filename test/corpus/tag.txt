@@ -14,7 +14,7 @@ some-tag
 Tag with classes
 ================================================================================
 
-some-tag.some-class.other-class
+sometag.someclass.otherclass
 
 --------------------------------------------------------------------------------
 
@@ -151,7 +151,7 @@ some-tag co{n#te{nt {text} content
 Tag with javascript interpolation content
 ================================================================================
 
-some-tag content #{text} content
+some-tag a#{ghi}abcde
 
 --------------------------------------------------------------------------------
 
@@ -159,7 +159,8 @@ some-tag content #{text} content
   (tag
     (tag_name)
     (content
-      (javascript))))
+      (escaped_string_interpolation
+        (interpolation_content)))))
 
 ================================================================================
 Wrapped Tag with content

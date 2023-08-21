@@ -375,17 +375,17 @@ module.exports = grammar({
     attribute_name: ($) =>
       choice(htmlAttributeRegex, $._angular_attribute_name),
 
+    escaped_string_interpolation: ($) =>
+      seq("#{", alias($._attr_js, $.interpolation_content), "}"),
     _comment_content: () => anythingOrNothingExceptNewlines,
     _delimited_javascript: () => /[^\n}]+/,
     _content_or_javascript: ($) =>
       alias(
         repeat1(
-          prec.right(
-            choice(
-              seq("#{", alias($._attr_js, $.javascript), "}"),
-              regexNotMatching(wordDelimiters),
-              choice(...wordDelimiters)
-            )
+          choice(
+            $.escaped_string_interpolation,
+            choice(...wordDelimiters),
+            regexNotMatching(wordDelimiters)
           )
         ),
         $.content
