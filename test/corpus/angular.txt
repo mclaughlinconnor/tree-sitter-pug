@@ -108,7 +108,7 @@ some-tag(#tplTemplate, let-name)
     (children
       (tag
         (tag_name)
-        (javascript)))))
+        (content)))))
 
 ================================================================================
 Angular attributes with dots in their names

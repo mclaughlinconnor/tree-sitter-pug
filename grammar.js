@@ -382,15 +382,11 @@ module.exports = grammar({
         repeat1(
           prec.right(
             choice(
-              seq(
-                "#{",
-                alias($._attr_js, $.javascript),
-                "}"
-              ),
+              seq("#{", alias($._attr_js, $.javascript), "}"),
               regexNotMatching(wordDelimiters),
-              choice(...wordDelimiters),
+              choice(...wordDelimiters)
             )
-          ),
+          )
         ),
         $.content
       ),
