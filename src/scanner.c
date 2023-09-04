@@ -45,7 +45,6 @@ enum TokenType {
   INDENT,
   DEDENT,
   JS_ATTR,
-  STRING,
 };
 
 typedef struct {
@@ -66,6 +65,7 @@ typedef struct {
   stack parens;
   stack tern_qmark_depth;
   bool operator_pending;
+  bool is_string_attr;
 } Scanner;
 
 static inline void advance(TSLexer *lexer) { lexer->advance(lexer, false); }
@@ -260,17 +260,19 @@ bool is_in_string(char c, Scanner *scanner) {
 bool is_in_parens(Scanner *scanner) { return VEC_BACK(scanner->parens) != 0; }
 
 /**
- * A valid attribute has been found if lexer->result_symbol is
- * STRING or JS_ATTR.
+ * A valid attribute has been found if lexer->result_symbol is JS_ATTR.
  */
-bool is_attr_found(TSLexer *lexer) {
-  return lexer->result_symbol == JS_ATTR || lexer->result_symbol == STRING;
+bool is_attr_found(TSLexer *lexer, Scanner *scanner) {
+  return (lexer->result_symbol == JS_ATTR && !scanner->is_string_attr);
 }
 
 /** Simply advance the lexer and unmark operator pending */
 void handle_alphanumeric(Scanner *scanner, TSLexer *lexer) {
   scanner->operator_pending = false;
   advance(lexer);
+
+  scanner->is_string_attr =
+      scanner->is_string_attr && is_quote(VEC_BACK(scanner->parens));
 }
 
 /**
@@ -284,6 +286,11 @@ void handle_quote(Scanner *scanner, TSLexer *lexer) {
   } else {
     VEC_PUSH(scanner->parens, lexer->lookahead);
   }
+
+  if (lexer->lookahead == '`') {
+    scanner->is_string_attr = false;
+  }
+
   advance(lexer);
 }
 
@@ -291,6 +298,9 @@ void handle_quote(Scanner *scanner, TSLexer *lexer) {
 void handle_open_bracket(Scanner *scanner, TSLexer *lexer) {
   scanner->operator_pending = false;
   VEC_PUSH(scanner->parens, lexer->lookahead);
+
+  scanner->is_string_attr = false;
+
   advance(lexer);
 }
 
@@ -305,10 +315,14 @@ void handle_open_bracket(Scanner *scanner, TSLexer *lexer) {
  */
 bool handle_close_backet(Scanner *scanner, TSLexer *lexer) {
   scanner->operator_pending = false;
+
   if (VEC_BACK(scanner->parens) == switch_bracket((char)lexer->lookahead)) {
     lexer->result_symbol = JS_ATTR;
     VEC_POP(scanner->parens);
     advance(lexer);
+
+    scanner->is_string_attr = false;
+
     return true; // isn't error
   }
 
@@ -323,6 +337,7 @@ bool handle_close_backet(Scanner *scanner, TSLexer *lexer) {
 void handle_operator(Scanner *scanner, TSLexer *lexer) {
   lexer->result_symbol = JS_ATTR;
   scanner->operator_pending = true;
+  scanner->is_string_attr = false;
   advance(lexer);
 }
 
@@ -349,6 +364,7 @@ bool handle_root_operator(Scanner *scanner, TSLexer *lexer) {
   }
 
   scanner->operator_pending = true;
+  scanner->is_string_attr = false;
   advance(lexer);
 
   return false;
@@ -377,7 +393,7 @@ bool handle_whitespace(Scanner *scanner, TSLexer *lexer) {
   if (is_intra_term_spacing(scanner, lexer)) {
     lexer->mark_end(lexer);
     scanner->operator_pending = false;
-    return is_attr_found(lexer) && !is_in_parens(scanner);
+    return !is_in_parens(scanner);
   }
 
   return false;
@@ -388,56 +404,54 @@ bool handle_whitespace(Scanner *scanner, TSLexer *lexer) {
  * we're ina a quote
  */
 bool is_valid_alpha(char c, Scanner *scanner) {
-  return isalpha(c) || isdigit(c) || (is_in_string(c, scanner)) || c == '_';
+  return isalpha(c) || isdigit(c) || is_in_string(c, scanner) || c == '_';
 }
 
-bool handle_attr(Scanner *scanner, TSLexer *lexer, const bool *valid_symbols) {
+bool handle_attr(Scanner *scanner, TSLexer *lexer) {
   while ((lexer->lookahead == ' ' || lexer->lookahead == '\t')) {
     skip(lexer);
   }
 
+  scanner->is_string_attr =
+      (char)lexer->lookahead == '"' || (char)lexer->lookahead == '\'';
+
   while (true) {
     if (lexer->eof(lexer)) {
-      return is_attr_found(lexer);
+      return is_attr_found(lexer, scanner);
     }
 
     char lookahead = (char)lexer->lookahead;
 
     if (lookahead == '\\' && is_in_string(lookahead, scanner)) {
-      // Only set STRING if result isn't already set so we don't
-      // overwrite JS_ATTR
-      if (!lexer->result_symbol) {
-        lexer->result_symbol = valid_symbols[STRING] ? STRING : JS_ATTR;
-      }
+      lexer->result_symbol = JS_ATTR;
 
       // Skip over \ and the next character
       advance(lexer);
       advance(lexer);
     } else if (is_valid_alpha(lookahead, scanner)) {
-      // Alpha characters are valid inside STRING and JS_ATTR, so don't
-      // overwrite them
+      // Alpha characters are valid inside JS_ATTR, so don't overwrite them
       if (!lexer->result_symbol) {
         lexer->result_symbol = JS_ATTR;
       }
       handle_alphanumeric(scanner, lexer);
+
     } else if (is_quote(lookahead)) {
       if (!lexer->result_symbol) {
-        lexer->result_symbol =
-            (valid_symbols[STRING] && !is_template_quote(lookahead)) ? STRING
-                                                                     : JS_ATTR;
+        lexer->result_symbol = JS_ATTR;
       }
 
       handle_quote(scanner, lexer);
     } else if (is_open_bracket(lookahead)) {
       lexer->result_symbol = JS_ATTR;
       handle_open_bracket(scanner, lexer);
+
     } else if (is_close_bracket(lookahead)) {
 
       // returns true for success, false for there being errors
       if (handle_close_backet(scanner, lexer)) {
         lexer->result_symbol = JS_ATTR;
       } else {
-        return is_attr_found(lexer);
+        return is_attr_found(lexer, scanner);
       }
 
     } else if (is_operator(lookahead) && is_in_parens(scanner)) {
@@ -449,14 +463,14 @@ bool handle_attr(Scanner *scanner, TSLexer *lexer, const bool *valid_symbols) {
         return true;
       }
     } else if ((lexer->lookahead == ' ' || lexer->lookahead == '\t')) {
-      // Will return true if we should stop
+      // Will return false to keep going
       if (handle_whitespace(scanner, lexer)) {
-        return true;
+        return is_attr_found(lexer, scanner);
       }
     } else {
       // The character found is not one we expected
       lexer->mark_end(lexer);
-      return is_attr_found(lexer);
+      return is_attr_found(lexer, scanner);
     }
   }
 }
@@ -506,8 +520,8 @@ bool tree_sitter_pug_external_scanner_scan(void *payload, TSLexer *lexer,
     }
   }
 
-  if (valid_symbols[JS_ATTR] || valid_symbols[STRING]) {
-    return handle_attr(scanner, lexer, valid_symbols);
+  if (valid_symbols[JS_ATTR]) {
+    return handle_attr(scanner, lexer);
   }
 
   // If a token is expecting a DEDENT to end, it's still valid if we've

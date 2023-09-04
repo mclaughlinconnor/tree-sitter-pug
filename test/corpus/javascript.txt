@@ -47,10 +47,12 @@ tag(attr="string", attr="string")
     (attributes
       (attribute
         (attribute_name)
-        (string))
+        (quoted_attribute_value
+          (attribute_value)))
       (attribute
         (attribute_name)
-        (string)))))
+        (quoted_attribute_value
+          (attribute_value))))))
 
 ================================================================================
 Tag with single quote string
@@ -66,10 +68,12 @@ tag(attr='string', attr='string')
     (attributes
       (attribute
         (attribute_name)
-        (string))
+        (quoted_attribute_value
+          (attribute_value)))
       (attribute
         (attribute_name)
-        (string)))))
+        (quoted_attribute_value
+          (attribute_value))))))
 
 ================================================================================
 Tag with template string

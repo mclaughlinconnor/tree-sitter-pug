@@ -12,7 +12,8 @@ some-tag([attr]='hello')
     (attributes
       (attribute
         (attribute_name)
-        (string)))))
+        (quoted_attribute_value
+          (attribute_value))))))
 
 ================================================================================
 Angular output
@@ -28,7 +29,8 @@ some-tag((attr)='hello')
     (attributes
       (attribute
         (attribute_name)
-        (string)))))
+        (quoted_attribute_value
+          (attribute_value))))))
 
 ================================================================================
 Angular output string
@@ -44,7 +46,8 @@ some-tag((attr)='console.log("test")')
     (attributes
       (attribute
         (attribute_name)
-        (string)))))
+        (quoted_attribute_value
+          (attribute_value))))))
 
 ================================================================================
 Angular banana box
@@ -60,7 +63,8 @@ some-tag([(attr)]='hello')
     (attributes
       (attribute
         (attribute_name)
-        (string)))))
+        (quoted_attribute_value
+          (attribute_value))))))
 
 ================================================================================
 Angular directive
@@ -76,7 +80,8 @@ some-tag(*ngIf='enabled')
     (attributes
       (attribute
         (attribute_name)
-        (string)))))
+        (quoted_attribute_value
+          (attribute_value))))))
 
 ================================================================================
 Angular templates
@@ -94,10 +99,12 @@ some-tag(#tplTemplate, let-name)
     (attributes
       (attribute
         (attribute_name)
-        (string))
+        (quoted_attribute_value
+          (attribute_value)))
       (attribute
         (attribute_name)
-        (string))))
+        (quoted_attribute_value
+          (attribute_value)))))
   (tag
     (tag_name)
     (attributes
@@ -124,4 +131,5 @@ some-tag([style.padding-right]='true')
     (attributes
       (attribute
         (attribute_name)
-        (string)))))
+        (quoted_attribute_value
+          (attribute_value))))))

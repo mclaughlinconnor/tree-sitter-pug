@@ -152,7 +152,8 @@ case variable + another
       (javascript))
     (when
       (keyword)
-      (javascript)
+      (quoted_attribute_value
+        (attribute_value))
       (children
         (tag
           (tag_name)

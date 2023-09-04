@@ -53,7 +53,8 @@ some-tag(attr, other-attr="test")
         (attribute_name))
       (attribute
         (attribute_name)
-        (string)))))
+        (quoted_attribute_value
+          (attribute_value))))))
 
 ================================================================================
 Tag with variable attribute followed by attribute containing question mark
@@ -76,7 +77,8 @@ div(attr="?")
     (attributes
       (attribute
         (attribute_name)
-        (string)))))
+        (quoted_attribute_value
+          (attribute_value))))))
 
 ================================================================================
 Tag attributes with escaped quotes
@@ -92,10 +94,12 @@ some-tag(attr='test\'test', other-attr="test\"test", template-attr=`test\`test`)
     (attributes
       (attribute
         (attribute_name)
-        (string))
+        (quoted_attribute_value
+          (attribute_value)))
       (attribute
         (attribute_name)
-        (string))
+        (quoted_attribute_value
+          (attribute_value)))
       (attribute
         (attribute_name)
         (javascript)))))
@@ -116,7 +120,8 @@ some-tag(@click.prevent.stop="click")
         (attribute_name)
         (attribute_modifier)
         (attribute_modifier)
-        (string)))))
+        (quoted_attribute_value
+          (attribute_value))))))
 
 ================================================================================
 Tag with content
@@ -253,7 +258,8 @@ tag(attr=value attr=cond ? "the answer is: 26" : "how are you?" attr="string")
         (javascript))
       (attribute
         (attribute_name)
-        (string)))))
+        (quoted_attribute_value
+          (attribute_value))))))
 
 ================================================================================
 Tag with ternary attribute with arrays
@@ -332,7 +338,7 @@ tag(attr={key: 'value', 'other': 2}, other=variable)
 Tag with function call attr
 ================================================================================
 
-tag(attr=true.txString(), yther='hello')
+tag(attr=true.txString(), other='hello')
 
 --------------------------------------------------------------------------------
 
@@ -345,7 +351,8 @@ tag(attr=true.txString(), yther='hello')
         (javascript))
       (attribute
         (attribute_name)
-        (string)))))
+        (quoted_attribute_value
+          (attribute_value))))))
 
 ================================================================================
 Tag with template string attribute
@@ -364,7 +371,8 @@ tag(attr=`hello ${variable} hello` other='hello')
         (javascript))
       (attribute
         (attribute_name)
-        (string)))))
+        (quoted_attribute_value
+          (attribute_value))))))
 
 ================================================================================
 Tag with array attribute
@@ -383,7 +391,8 @@ tag(attr=['one', 'two', 'three'] other='hello')
         (javascript))
       (attribute
         (attribute_name)
-        (string)))))
+        (quoted_attribute_value
+          (attribute_value))))))
 
 ================================================================================
 Tag with multiple code attributes
@@ -513,7 +522,8 @@ img
         (attributes
           (attribute
             (attribute_name)
-            (string)))
+            (quoted_attribute_value
+              (attribute_value))))
         (self_close_slash)
         (children
           (tag

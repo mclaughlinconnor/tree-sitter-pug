@@ -59,7 +59,6 @@ module.exports = grammar({
     $._indent,
     $._dedent,
     $._attr_js,
-    $._attr_string,
   ],
   rules: {
     source_file: ($) =>
@@ -237,15 +236,18 @@ module.exports = grammar({
         )
       ),
     _dummy_tag: ($) => $.tag,
-    _when_keyword: ($) =>
+    _when_statement: ($) =>
       choice(
-        seq(alias("when", $.keyword), alias($._attr_js, $.javascript)),
+        seq(
+          alias("when", $.keyword),
+          choice(alias($._attr_js, $.javascript), $.quoted_attribute_value)
+        ),
         alias("default", $.keyword)
       ),
     when: ($) =>
       prec.left(
         seq(
-          $._when_keyword,
+          $._when_statement,
           choice(
             $._when_content,
             // There are newlines between each when case, but not the last when
@@ -306,16 +308,19 @@ module.exports = grammar({
         optional($.attribute),
         ")"
       ),
-    attribute: ($) => $._attribute,
-    _attribute_value: ($) =>
-      choice(alias($._attr_string, $.string), alias($._attr_js, $.javascript)),
-    _attribute: ($) =>
+    attribute: ($) =>
       seq(
         $.attribute_name,
         optional(repeat1(seq(".", alias(/[\w@\-:]+/, $.attribute_modifier)))),
         optional(seq("=", $._attribute_value))
       ),
-
+    _attribute_value: ($) =>
+      choice($.quoted_attribute_value, alias($._attr_js, $.javascript)),
+    quoted_attribute_value: ($) =>
+      choice(
+        seq("'", optional(alias(/(?:[^'\\]|\\.)+/, $.attribute_value)), "'"),
+        seq('"', optional(alias(/(?:[^"\\]|\\.)+/, $.attribute_value)), '"'),
+      ),
     children: ($) =>
       prec.right(seq($._indent, repeat1($._children_choice), $._dedent)),
     _children_choice: ($) =>
@@ -385,7 +390,7 @@ module.exports = grammar({
           choice(
             $.escaped_string_interpolation,
             choice(...wordDelimiters),
-            regexNotMatching(wordDelimiters)
+            alias(regexNotMatching(wordDelimiters), "text")
           )
         ),
         $.content

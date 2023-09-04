@@ -73,7 +73,7 @@ a content
 |
 a content
 |
-| 
+| content
 a content
 
 --------------------------------------------------------------------------------
@@ -114,7 +114,8 @@ a(class='button', href='//google.com') Google
     (attributes
       (attribute
         (attribute_name)
-        (string)))
+        (quoted_attribute_value
+          (attribute_value))))
     (content))
   (pipe)
   (pipe)
@@ -123,10 +124,12 @@ a(class='button', href='//google.com') Google
     (attributes
       (attribute
         (attribute_name)
-        (string))
+        (quoted_attribute_value
+          (attribute_value)))
       (attribute
         (attribute_name)
-        (string)))
+        (quoted_attribute_value
+          (attribute_value))))
     (content))
   (pipe)
   (pipe)
@@ -135,10 +138,12 @@ a(class='button', href='//google.com') Google
     (attributes
       (attribute
         (attribute_name)
-        (string))
+        (quoted_attribute_value
+          (attribute_value)))
       (attribute
         (attribute_name)
-        (string)))
+        (quoted_attribute_value
+          (attribute_value))))
     (content)))
 
 ================================================================================

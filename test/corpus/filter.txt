@@ -28,7 +28,8 @@ Single line filter with attributes
         (javascript))
       (attribute
         (attribute_name)
-        (string)))
+        (quoted_attribute_value
+          (attribute_value))))
     (content)))
 
 ================================================================================
@@ -78,7 +79,8 @@ tag
         (javascript))
       (attribute
         (attribute_name)
-        (string)))
+        (quoted_attribute_value
+          (attribute_value))))
     (content))
   (tag
     (tag_name)))

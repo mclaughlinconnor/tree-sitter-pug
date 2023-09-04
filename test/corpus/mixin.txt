@@ -73,9 +73,10 @@ tag
   (mixin_use
     (mixin_name)
     (attribute
-      (string)))
-  (tag
-    (tag_name)))
+      (quoted_attribute_value
+        (attribute_value))))
+    (tag
+      (tag_name)))
 
 ================================================================================
 Mixin use with complex attributes
@@ -92,7 +93,8 @@ tag
   (mixin_use
     (mixin_name)
     (attribute
-      (string))
+      (quoted_attribute_value
+        (attribute_value)))
     (attribute
       (javascript))
     (attribute
