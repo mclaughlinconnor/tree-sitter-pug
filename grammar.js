@@ -18,7 +18,7 @@ const filterNameRegex = /[\w\-]+/;
 const htmlAttributeRegex = /#?[\w@\-:]+/;
 const angularAttributeRegexString = "[\\w@\\-:\\.]+";
 
-const whitespace = /\s+/;
+const whitespace = /( |\t)+/;
 
 const doubleQuoteStringContent = /((?:[^"\\]|\\.)*)/;
 const singleQuoteStringContent = /((?:[^'\\]|\\.)*)/;
@@ -209,6 +209,7 @@ module.exports = grammar({
         choice(
           seq(
             alias(choice("unless", "if", "else if"), $.keyword),
+            whitespace,
             alias($._attr_js, $.javascript)
           ),
           alias("else", $.keyword)
@@ -282,7 +283,10 @@ module.exports = grammar({
             choice($.buffered_code, $.unescaped_buffered_code)
           ),
           seq(
-            optional(seq(" ", $._content_or_javascript)),
+            choice(
+              optional(whitespace),
+              seq(whitespace, $._content_or_javascript)
+            ),
             $._newline,
             optional($.children)
           )
@@ -422,7 +426,7 @@ module.exports = grammar({
       prec.right(
         seq(
           "-",
-          token.immediate(/( |\t)*/),
+          optional(token.immediate(whitespace)),
           choice(
             seq($._single_line_buf_code),
             seq(
