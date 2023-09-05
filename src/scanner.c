@@ -487,8 +487,9 @@ bool tree_sitter_pug_external_scanner_scan(void *payload, TSLexer *lexer,
     }
   }
 
-  if (lexer->lookahead && (valid_symbols[INDENT] || valid_symbols[DEDENT])) {
-    uint32_t starting_column = lexer->get_column(lexer);
+  if (lexer->lookahead && (valid_symbols[INDENT] || valid_symbols[DEDENT]) &&
+      lexer->get_column(lexer) == 0) {
+    uint32_t starting_column = 0;
     uint32_t indent_length = 0;
 
     // Indent tokens are zero width

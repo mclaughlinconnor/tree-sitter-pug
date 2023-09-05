@@ -322,7 +322,14 @@ module.exports = grammar({
         seq('"', optional(alias(/(?:[^"\\]|\\.)+/, $.attribute_value)), '"'),
       ),
     children: ($) =>
-      prec.right(seq($._indent, repeat1($._children_choice), $._dedent)),
+      prec.right(
+        seq(
+          $._indent,
+          repeat1($._children_choice),
+          optional($._newline),
+          $._dedent
+        )
+      ),
     _children_choice: ($) =>
       prec(
         1,
