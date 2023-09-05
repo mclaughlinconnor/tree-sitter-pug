@@ -278,6 +278,29 @@ module.exports = grammar({
         ),
         $._dedent
       ),
+    _interpolatable_tag: ($) =>
+      prec.left(
+        seq(
+          choice($.tag_name, $.id, $.class),
+          optional(repeat1(choice($.id, $.class))),
+          optional($.attributes),
+          optional(alias("/", $.self_close_slash)),
+          choice(
+            seq(":", $.tag),
+            $._content_after_dot,
+            seq(
+              optional(seq($._newline, $._indent)),
+              choice($.buffered_code, $.unescaped_buffered_code)
+            ),
+            seq(
+              choice(
+                optional(whitespace),
+                seq(whitespace, $._content_or_javascript)
+              )
+            )
+          )
+        )
+      ),
     tag: ($) =>
       seq(
         choice($.tag_name, $.id, $.class),
@@ -400,20 +423,36 @@ module.exports = grammar({
     attribute_name: ($) =>
       choice(htmlAttributeRegex, $._angular_attribute_name),
 
+    _interpolatable: ($) =>
+      choice(
+        alias($._interpolatable_tag, $.tag),
+        $.unbuffered_code,
+        $.buffered_code,
+        $.unescaped_buffered_code,
+        $.pipe,
+        $.filter,
+        $.mixin_use
+      ),
+
     escaped_string_interpolation: ($) =>
       seq("#{", alias($._attr_js, $.interpolation_content), "}"),
+    tag_interpolation: ($) =>
+      seq("#[", alias($._interpolatable, $.interpolation_content), "]"),
     _comment_content: () => anythingOrNothingExceptNewlines,
     _delimited_javascript: () => /[^\n}]+/,
     _content_or_javascript: ($) =>
-      alias(
-        repeat1(
-          choice(
-            $.escaped_string_interpolation,
-            choice(...wordDelimiters),
-            alias(regexNotMatching(wordDelimiters), "text")
-          )
-        ),
-        $.content
+      prec.left(
+        alias(
+          repeat1(
+            choice(
+              $.escaped_string_interpolation,
+              $.tag_interpolation,
+              choice(...wordDelimiters),
+              alias(regexNotMatching(wordDelimiters), "text")
+            )
+          ),
+          $.content
+        )
       ),
 
     _single_line_buf_code: ($) =>

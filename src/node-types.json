@@ -268,6 +268,10 @@
         {
           "type": "filter",
           "named": true
+        },
+        {
+          "type": "tag_interpolation",
+          "named": true
         }
       ]
     }
@@ -412,6 +416,45 @@
         },
         {
           "type": "keyword",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
+    "type": "interpolation_content",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": false,
+      "types": [
+        {
+          "type": "buffered_code",
+          "named": true
+        },
+        {
+          "type": "filter",
+          "named": true
+        },
+        {
+          "type": "mixin_use",
+          "named": true
+        },
+        {
+          "type": "pipe",
+          "named": true
+        },
+        {
+          "type": "tag",
+          "named": true
+        },
+        {
+          "type": "unbuffered_code",
+          "named": true
+        },
+        {
+          "type": "unescaped_buffered_code",
           "named": true
         }
       ]
@@ -697,6 +740,21 @@
     }
   },
   {
+    "type": "tag_interpolation",
+    "named": true,
+    "fields": {},
+    "children": {
+      "multiple": false,
+      "required": true,
+      "types": [
+        {
+          "type": "interpolation_content",
+          "named": true
+        }
+      ]
+    }
+  },
+  {
     "type": "unbuffered_code",
     "named": true,
     "fields": {},
@@ -802,6 +860,10 @@
   },
   {
     "type": "#",
+    "named": false
+  },
+  {
+    "type": "#[",
     "named": false
   },
   {
@@ -918,10 +980,6 @@
   },
   {
     "type": "id",
-    "named": true
-  },
-  {
-    "type": "interpolation_content",
     "named": true
   },
   {
