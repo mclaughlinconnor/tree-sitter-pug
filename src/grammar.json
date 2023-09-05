@@ -598,48 +598,66 @@
       ]
     },
     "block_use": {
-      "type": "SEQ",
-      "members": [
-        {
-          "type": "ALIAS",
-          "content": {
-            "type": "CHOICE",
+      "type": "PREC_RIGHT",
+      "value": 0,
+      "content": {
+        "type": "CHOICE",
+        "members": [
+          {
+            "type": "ALIAS",
+            "content": {
+              "type": "STRING",
+              "value": "block"
+            },
+            "named": true,
+            "value": "keyword"
+          },
+          {
+            "type": "SEQ",
             "members": [
               {
-                "type": "STRING",
-                "value": "block"
+                "type": "ALIAS",
+                "content": {
+                  "type": "CHOICE",
+                  "members": [
+                    {
+                      "type": "STRING",
+                      "value": "block"
+                    },
+                    {
+                      "type": "BLANK"
+                    }
+                  ]
+                },
+                "named": true,
+                "value": "keyword"
               },
               {
-                "type": "BLANK"
-              }
-            ]
-          },
-          "named": true,
-          "value": "keyword"
-        },
-        {
-          "type": "ALIAS",
-          "content": {
-            "type": "CHOICE",
-            "members": [
-              {
-                "type": "STRING",
-                "value": "append"
+                "type": "ALIAS",
+                "content": {
+                  "type": "CHOICE",
+                  "members": [
+                    {
+                      "type": "STRING",
+                      "value": "append"
+                    },
+                    {
+                      "type": "STRING",
+                      "value": "prepend"
+                    }
+                  ]
+                },
+                "named": true,
+                "value": "keyword"
               },
               {
-                "type": "STRING",
-                "value": "prepend"
+                "type": "SYMBOL",
+                "name": "_block_content"
               }
             ]
-          },
-          "named": true,
-          "value": "keyword"
-        },
-        {
-          "type": "SYMBOL",
-          "name": "_block_content"
-        }
-      ]
+          }
+        ]
+      }
     },
     "extends": {
       "type": "SEQ",

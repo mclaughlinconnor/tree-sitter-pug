@@ -175,10 +175,15 @@ module.exports = grammar({
       ),
     block_definition: ($) => seq(alias("block", $.keyword), $._block_content),
     block_use: ($) =>
-      seq(
-        alias(optional("block"), $.keyword),
-        alias(choice("append", "prepend"), $.keyword),
-        $._block_content
+      prec.right(
+        choice(
+          alias("block", $.keyword),
+          seq(
+            alias(optional("block"), $.keyword),
+            alias(choice("append", "prepend"), $.keyword),
+            $._block_content
+          )
+        )
       ),
     extends: ($) =>
       seq(
