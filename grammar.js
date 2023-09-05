@@ -90,10 +90,14 @@ module.exports = grammar({
     pipe: ($) => seq("|", optional($._content_or_javascript), $._newline),
 
     include: ($) =>
-      seq(
-        alias("include", $.keyword),
-        optional($.filter),
-        alias(anythingExceptNewlines, $.filename)
+      prec.right(
+        seq(
+          alias("include", $.keyword),
+          choice(
+            optional($.filter),
+            seq(whitespace, alias(anythingExceptNewlines, $.filename))
+          )
+        )
       ),
 
     while: ($) =>

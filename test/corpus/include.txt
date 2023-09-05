@@ -19,7 +19,7 @@ tag
 Include with filter
 ================================================================================
 
-include:f
+include:filter filename
 
 tag
 
@@ -28,6 +28,8 @@ tag
 (source_file
   (include
     (keyword)
-    (filename))
+    (filter
+      (filter_name)
+      (content)))
   (tag
     (tag_name)))
