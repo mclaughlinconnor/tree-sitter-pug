@@ -27,6 +27,31 @@ const templateQuoteStringContent = /((?:[^`\\]|\\.)*)/;
 const anythingExceptNewlines = /[^\n]+/;
 const anythingOrNothingExceptNewlines = /[^\n]*/;
 
+const wordDelimiters = [
+  "/",
+  "'",
+  '"',
+  "<",
+  "(",
+  "[",
+  "{",
+  ".",
+  ",",
+  ":",
+  ";",
+  "!",
+  "?",
+  "\\",
+  "}",
+  "]",
+  ")",
+  ">",
+  "#",
+  " ",
+  // Last so it doesn't get parsed as regex range
+  "-",
+];
+
 module.exports = grammar({
   name: "pug",
   externals: ($) => [
@@ -311,6 +336,8 @@ module.exports = grammar({
           $.block_definition,
           $.block_use,
           $.extends,
+          $.mixin_definition,
+          $.mixin_use,
           $.each,
           $.while,
           $.include,
@@ -348,19 +375,24 @@ module.exports = grammar({
     attribute_name: ($) =>
       choice(htmlAttributeRegex, $._angular_attribute_name),
 
-    content: () =>
-      prec.right(repeat1(seq(/[^\n{#]+?/, optional("#"), optional("{")))),
     _comment_content: () => anythingOrNothingExceptNewlines,
     _delimited_javascript: () => /[^\n}]+/,
     _content_or_javascript: ($) =>
-      repeat1(
-        prec.right(
-          choice(
-            seq("#{", alias($._delimited_javascript, $.javascript), "}"),
-            seq("{{", alias($._delimited_javascript, $.javascript), "}}"),
-            $.content
-          )
-        )
+      alias(
+        repeat1(
+          prec.right(
+            choice(
+              seq(
+                "#{",
+                alias($._attr_js, $.javascript),
+                "}"
+              ),
+              regexNotMatching(wordDelimiters),
+              choice(...wordDelimiters),
+            )
+          ),
+        ),
+        $.content
       ),
 
     _single_line_buf_code: ($) =>
@@ -401,3 +433,19 @@ module.exports = grammar({
       ),
   },
 });
+
+/**
+ * Match any characters that aren't whitespace or that aren't in the given list.
+ */
+function regexNotMatching(characters) {
+  characters = escapeRegExp(characters.join(""));
+  return new RegExp(`[^\\s${characters}]+`);
+}
+
+/**
+ * Escape regex characters
+ * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Regular_Expressions#escaping
+ */
+function escapeRegExp(string) {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"); // $& means the whole matched string
+}

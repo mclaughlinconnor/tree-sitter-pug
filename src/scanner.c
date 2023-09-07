@@ -40,7 +40,13 @@ enum { TAB_WIDTH = 8 };
 
 #define VEC_CLEAR(vec) (vec).len = 0;
 
-enum TokenType { NEWLINE, INDENT, DEDENT, JS_ATTR, STRING };
+enum TokenType {
+  NEWLINE,
+  INDENT,
+  DEDENT,
+  JS_ATTR,
+  STRING,
+};
 
 typedef struct {
   uint32_t len;
@@ -459,10 +465,6 @@ bool tree_sitter_pug_external_scanner_scan(void *payload, TSLexer *lexer,
                                            const bool *valid_symbols) {
   Scanner *scanner = (Scanner *)payload;
 
-  if (valid_symbols[JS_ATTR] || valid_symbols[STRING]) {
-    return handle_attr(scanner, lexer, valid_symbols);
-  }
-
   if (lexer->lookahead == '\n') {
     if (valid_symbols[NEWLINE]) {
       skip(lexer);
@@ -509,6 +511,17 @@ bool tree_sitter_pug_external_scanner_scan(void *payload, TSLexer *lexer,
       lexer->result_symbol = DEDENT;
       return true;
     }
+  }
+
+  if (valid_symbols[JS_ATTR] || valid_symbols[STRING]) {
+    return handle_attr(scanner, lexer, valid_symbols);
+  }
+
+  // If a token is expecting a DEDENT to end, it's still valid if we've
+  // reached the end insetad.
+  if (valid_symbols[DEDENT] && lexer->eof(lexer)) {
+    lexer->result_symbol = DEDENT;
+    return true;
   }
 
   return false;
