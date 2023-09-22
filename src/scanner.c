@@ -1,8 +1,8 @@
 #include "tree_sitter/parser.h"
-#include <assert.h>
-#include <ctype.h>
 #include <stdio.h>
-#include <string.h>
+#include <stdlib.h>
+#include <stddef.h>
+#include <wctype.h>
 
 enum { TAB_WIDTH = 8 };
 
@@ -10,7 +10,6 @@ enum { TAB_WIDTH = 8 };
 
 #define VEC_RESIZE(vec, _cap)                                                  \
   void *tmp = realloc((vec).data, (_cap) * sizeof((vec).data[0]));             \
-  assert(tmp != NULL);                                                         \
   (vec).data = tmp;                                                            \
   (vec).cap = (_cap);
 
@@ -404,7 +403,7 @@ bool handle_whitespace(Scanner *scanner, TSLexer *lexer) {
  * we're ina a quote
  */
 bool is_valid_alpha(char c, Scanner *scanner) {
-  return isalpha(c) || isdigit(c) || is_in_string(c, scanner) || c == '_';
+  return iswalpha(c) || iswdigit(c) || is_in_string(c, scanner) || c == '_';
 }
 
 bool handle_attr(Scanner *scanner, TSLexer *lexer) {
