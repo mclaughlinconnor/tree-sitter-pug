@@ -73,7 +73,7 @@ static inline void skip(TSLexer *lexer) { lexer->advance(lexer, true); }
 
 void serialize_stack(size_t *size, char *buffer, stack *stack) {
   buffer[(*size)++] = (char)stack->len;
-  for (int iter = 1;
+  for (uint32_t iter = 1;
        iter < stack->len && *size < TREE_SITTER_SERIALIZATION_BUFFER_SIZE;
        ++iter) {
     buffer[(*size)++] = (char)stack->data[iter];
