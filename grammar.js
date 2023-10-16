@@ -20,10 +20,6 @@ const angularAttributeRegexString = "[\\w@\\-:\\.]+";
 
 const whitespace = /( |\t)+/;
 
-const doubleQuoteStringContent = /((?:[^"\\]|\\.)*)/;
-const singleQuoteStringContent = /((?:[^'\\]|\\.)*)/;
-const templateQuoteStringContent = /((?:[^`\\]|\\.)*)/;
-
 const anythingExceptNewlines = /[^\n]+/;
 const anythingOrNothingExceptNewlines = /[^\n]*/;
 
