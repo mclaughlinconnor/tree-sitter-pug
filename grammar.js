@@ -340,8 +340,7 @@ module.exports = grammar({
     attributes: ($) =>
       seq(
         "(",
-        repeat(prec.right(seq($.attribute, optional(",")))),
-        optional($.attribute),
+        repeat(prec.right(seq($.attribute, repeat(",")))),
         ")"
       ),
     attribute: ($) =>
