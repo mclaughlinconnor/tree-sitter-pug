@@ -458,6 +458,47 @@ tag(attr=x + 10 attr=array || default, [attr]=cond ? {key: value} : results * 10
         (javascript)))))
 
 ================================================================================
+Tag with &attributes
+================================================================================
+
+some-tag(attr, other-attr="test")&attributes()
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (tag
+    (tag_name)
+    (attributes
+      (attribute
+        (attribute_name))
+      (attribute
+        (attribute_name)
+        (quoted_attribute_value
+          (attribute_value))))
+    (attributes)))
+
+================================================================================
+Tag with &attributes with value
+================================================================================
+
+some-tag(attr, other-attr="test")&attributes({hello})
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (tag
+    (tag_name)
+    (attributes
+      (attribute
+        (attribute_name))
+      (attribute
+        (attribute_name)
+        (quoted_attribute_value
+          (attribute_value))))
+    (attributes
+      (javascript))))
+
+================================================================================
 Tag with dot content same line
 ================================================================================
 

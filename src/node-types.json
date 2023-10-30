@@ -42,6 +42,10 @@
         {
           "type": "attribute",
           "named": true
+        },
+        {
+          "type": "javascript",
+          "named": true
         }
       ]
     }
@@ -868,6 +872,10 @@
   },
   {
     "type": "#{",
+    "named": false
+  },
+  {
+    "type": "&attributes(",
     "named": false
   },
   {

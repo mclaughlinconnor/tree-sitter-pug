@@ -1321,6 +1321,23 @@
           ]
         },
         {
+          "type": "ALIAS",
+          "content": {
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "SYMBOL",
+                "name": "_and_attributes"
+              },
+              {
+                "type": "BLANK"
+              }
+            ]
+          },
+          "named": true,
+          "value": "attributes"
+        },
+        {
           "type": "CHOICE",
           "members": [
             {
@@ -1697,6 +1714,36 @@
               "value": "\""
             }
           ]
+        }
+      ]
+    },
+    "_and_attributes": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "STRING",
+          "value": "&attributes("
+        },
+        {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "ALIAS",
+              "content": {
+                "type": "SYMBOL",
+                "name": "_attr_js"
+              },
+              "named": true,
+              "value": "javascript"
+            },
+            {
+              "type": "BLANK"
+            }
+          ]
+        },
+        {
+          "type": "STRING",
+          "value": ")"
         }
       ]
     },

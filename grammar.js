@@ -302,6 +302,7 @@ module.exports = grammar({
         choice($.tag_name, $.id, $.class),
         optional(repeat1(choice($.id, $.class))),
         optional($.attributes),
+        alias(optional($._and_attributes), $.attributes),
         optional(alias("/", $.self_close_slash)),
         choice(
           seq(":", $.tag),
@@ -352,6 +353,8 @@ module.exports = grammar({
         seq("'", optional(alias(/(?:[^'\\]|\\.)+/, $.attribute_value)), "'"),
         seq('"', optional(alias(/(?:[^"\\]|\\.)+/, $.attribute_value)), '"'),
       ),
+    _and_attributes: ($) =>
+      seq("&attributes(", optional(alias($._attr_js, $.javascript)), ")"),
     children: ($) =>
       prec.right(
         seq(
