@@ -50,12 +50,7 @@ const wordDelimiters = [
 
 module.exports = grammar({
   name: "pug",
-  externals: ($) => [
-    $._newline,
-    $._indent,
-    $._dedent,
-    $._attr_js,
-  ],
+  externals: ($) => [$._newline, $._indent, $._dedent, $._attr_js],
   rules: {
     source_file: ($) =>
       repeat(
@@ -130,17 +125,19 @@ module.exports = grammar({
         "+",
         alias($.tag_name, $.mixin_name),
         optional(
-          seq(
-            "(",
-            optional(
-              seq(
-                repeat(seq(alias($._attribute_value, $.attribute), ",")),
-                alias($._attribute_value, $.attribute)
-              )
-            ),
-            ")"
-          )
+          seq(optional(seq($.mixin_use_parameters, optional($.attributes))))
         )
+      ),
+    mixin_use_parameters: ($) =>
+      seq(
+        "(",
+        optional(
+          seq(
+            repeat(seq(alias($._attribute_value, $.attribute), ",")),
+            alias($._attribute_value, $.attribute)
+          )
+        ),
+        ")"
       ),
     mixin_definition: ($) =>
       seq(
@@ -335,11 +332,7 @@ module.exports = grammar({
       ),
 
     attributes: ($) =>
-      seq(
-        "(",
-        repeat(prec.right(seq($.attribute, repeat(",")))),
-        ")"
-      ),
+      seq("(", repeat(prec.right(seq($.attribute, repeat(",")))), ")"),
     attribute: ($) =>
       seq(
         $.attribute_name,
@@ -351,7 +344,7 @@ module.exports = grammar({
     quoted_attribute_value: ($) =>
       choice(
         seq("'", optional(alias(/(?:[^'\\]|\\.)+/, $.attribute_value)), "'"),
-        seq('"', optional(alias(/(?:[^"\\]|\\.)+/, $.attribute_value)), '"'),
+        seq('"', optional(alias(/(?:[^"\\]|\\.)+/, $.attribute_value)), '"')
       ),
     _and_attributes: ($) =>
       seq("&attributes(", optional(alias($._attr_js, $.javascript)), ")"),

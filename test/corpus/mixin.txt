@@ -59,7 +59,7 @@ tag
     (tag_name)))
 
 ================================================================================
-Mixin use with attributes
+Mixin use with parameters
 ================================================================================
 
 +mixin('attr')
@@ -72,17 +72,18 @@ tag
 (source_file
   (mixin_use
     (mixin_name)
-    (attribute
-      (quoted_attribute_value
-        (attribute_value))))
-    (tag
-      (tag_name)))
+    (mixin_use_parameters
+      (attribute
+        (quoted_attribute_value
+          (attribute_value)))))
+  (tag
+    (tag_name)))
 
 ================================================================================
-Mixin use with complex attributes
+Mixin use with parameters and attributes
 ================================================================================
 
-+mixin('attr', 2, ['fdsa'])
++mixin('attr', 'hello')(attr='value')
 
 
 tag
@@ -92,13 +93,54 @@ tag
 (source_file
   (mixin_use
     (mixin_name)
-    (attribute
-      (quoted_attribute_value
-        (attribute_value)))
-    (attribute
-      (javascript))
-    (attribute
-      (javascript)))
+    (mixin_use_parameters
+      (attribute
+        (quoted_attribute_value
+          (attribute_value)))
+      (attribute
+        (quoted_attribute_value
+          (attribute_value))))
+    (attributes
+      (attribute
+        (attribute_name)
+        (quoted_attribute_value
+          (attribute_value)))))
+  (tag
+    (tag_name)))
+
+================================================================================
+Mixin use with complex parameters and complex attributes
+================================================================================
+
++mixin('attr', 2, ['fdsa'])(attr='attr', attr=2, attr=['fdsa'])
+
+
+tag
+
+--------------------------------------------------------------------------------
+
+(source_file
+  (mixin_use
+    (mixin_name)
+    (mixin_use_parameters
+      (attribute
+        (quoted_attribute_value
+          (attribute_value)))
+      (attribute
+        (javascript))
+      (attribute
+        (javascript)))
+    (attributes
+      (attribute
+        (attribute_name)
+        (quoted_attribute_value
+          (attribute_value)))
+      (attribute
+        (attribute_name)
+        (javascript))
+      (attribute
+        (attribute_name)
+        (javascript))))
   (tag
     (tag_name)))
 
@@ -112,9 +154,10 @@ if true
 --------------------------------------------------------------------------------
 
 (source_file
- (conditional
-  (keyword)
-  (javascript)
-  (children
-   (mixin_use
-   (mixin_name)))))
+  (conditional
+    (keyword)
+    (javascript)
+    (children
+      (mixin_use
+        (mixin_name)
+        (mixin_use_parameters)))))
