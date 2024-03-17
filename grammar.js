@@ -421,7 +421,7 @@ module.exports = grammar({
       seq("#{", alias($._attr_js, $.interpolation_content), "}"),
     tag_interpolation: ($) =>
       seq("#[", alias($._interpolatable, $.interpolation_content), "]"),
-    _comment_content: () => anythingOrNothingExceptNewlines,
+    _comment_content: () => anythingExceptNewlines,
     _delimited_javascript: () => /[^\n}]+/,
     _content_or_javascript: ($) =>
       prec.left(

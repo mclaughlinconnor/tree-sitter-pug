@@ -2086,7 +2086,7 @@
     },
     "_comment_content": {
       "type": "PATTERN",
-      "value": "[^\\n]*"
+      "value": "[^\\n]+"
     },
     "_delimited_javascript": {
       "type": "PATTERN",
