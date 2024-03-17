@@ -226,7 +226,8 @@ module.exports = grammar({
           alias($._attr_js, $.javascript),
           $._newline,
           $._indent,
-          repeat1($.when)
+          repeat1($.when),
+          $._dedent
         )
       ),
     _when_content: ($) =>
