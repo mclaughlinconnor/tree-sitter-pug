@@ -194,9 +194,6 @@ tag
 (source_file
   (tag
     (tag_name)
-    (children
-      (content)
-      (content)
-      (content)))
+    (content))
   (tag
     (tag_name)))

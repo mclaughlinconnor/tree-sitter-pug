@@ -804,11 +804,7 @@
                 "members": [
                   {
                     "type": "PATTERN",
-                    "value": "[^\\n]*"
-                  },
-                  {
-                    "type": "SYMBOL",
-                    "name": "_newline"
+                    "value": "[^\\n]+"
                   }
                 ]
               }
@@ -1497,27 +1493,6 @@
       "type": "SEQ",
       "members": [
         {
-          "type": "CHOICE",
-          "members": [
-            {
-              "type": "SEQ",
-              "members": [
-                {
-                  "type": "SYMBOL",
-                  "name": "_newline"
-                },
-                {
-                  "type": "SYMBOL",
-                  "name": "_indent"
-                }
-              ]
-            },
-            {
-              "type": "BLANK"
-            }
-          ]
-        },
-        {
           "type": "STRING",
           "value": "."
         },
@@ -1530,33 +1505,8 @@
           "name": "_indent"
         },
         {
-          "type": "ALIAS",
-          "content": {
-            "type": "REPEAT1",
-            "content": {
-              "type": "SEQ",
-              "members": [
-                {
-                  "type": "CHOICE",
-                  "members": [
-                    {
-                      "type": "SYMBOL",
-                      "name": "_content_or_javascript"
-                    },
-                    {
-                      "type": "BLANK"
-                    }
-                  ]
-                },
-                {
-                  "type": "SYMBOL",
-                  "name": "_newline"
-                }
-              ]
-            }
-          },
-          "named": true,
-          "value": "children"
+          "type": "SYMBOL",
+          "name": "_content_or_javascript"
         },
         {
           "type": "SYMBOL",
@@ -1877,6 +1827,10 @@
           {
             "type": "SYMBOL",
             "name": "include"
+          },
+          {
+            "type": "SYMBOL",
+            "name": "_content_after_dot"
           }
         ]
       }
@@ -2093,7 +2047,7 @@
       "value": "[^\\n}]+"
     },
     "_content_or_javascript": {
-      "type": "PREC_LEFT",
+      "type": "PREC_RIGHT",
       "value": 0,
       "content": {
         "type": "ALIAS",

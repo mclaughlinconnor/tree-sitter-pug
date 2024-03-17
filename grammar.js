@@ -201,7 +201,7 @@ module.exports = grammar({
         seq(
           $._newline,
           $._indent,
-          repeat(seq(anythingOrNothingExceptNewlines, $._newline)),
+          repeat(seq(anythingExceptNewlines)),
           $._dedent
         )
       ),
@@ -319,17 +319,7 @@ module.exports = grammar({
         )
       ),
     _content_after_dot: ($) =>
-      seq(
-        optional(seq($._newline, $._indent)),
-        ".",
-        $._newline,
-        $._indent,
-        alias(
-          repeat1(seq(optional($._content_or_javascript), $._newline)),
-          $.children
-        ),
-        $._dedent
-      ),
+      seq(".", $._newline, $._indent, $._content_or_javascript, $._dedent),
 
     attributes: ($) =>
       seq("(", repeat(prec.right(seq($.attribute, repeat(",")))), ")"),
@@ -372,7 +362,8 @@ module.exports = grammar({
           $.mixin_use,
           $.each,
           $.while,
-          $.include
+          $.include,
+          $._content_after_dot
         )
       ),
 
@@ -424,7 +415,7 @@ module.exports = grammar({
     _comment_content: () => anythingExceptNewlines,
     _delimited_javascript: () => /[^\n}]+/,
     _content_or_javascript: ($) =>
-      prec.left(
+      prec.right(
         alias(
           repeat1(
             choice(
