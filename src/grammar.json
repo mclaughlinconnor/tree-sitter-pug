@@ -2047,7 +2047,7 @@
       "value": "[^\\n}]+"
     },
     "_content_or_javascript": {
-      "type": "PREC_RIGHT",
+      "type": "PREC_LEFT",
       "value": 0,
       "content": {
         "type": "ALIAS",

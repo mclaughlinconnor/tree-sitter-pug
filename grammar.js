@@ -415,7 +415,7 @@ module.exports = grammar({
     _comment_content: () => anythingExceptNewlines,
     _delimited_javascript: () => /[^\n}]+/,
     _content_or_javascript: ($) =>
-      prec.right(
+      prec.left(
         alias(
           repeat1(
             choice(
