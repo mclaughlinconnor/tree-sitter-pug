@@ -58,9 +58,10 @@ tag
             (tag_name))))
       (block_definition
         (keyword)
-        (block_name))
-      (tag
-        (tag_name))))
+        (block_name)
+        (children
+          (tag
+            (tag_name))))))
   (tag
     (tag_name)))
 
@@ -105,12 +106,13 @@ tag
             (tag_name))))
       (block_use
         (keyword)
-        (block_name))
-      (tag
-        (tag_name)
+        (block_name)
         (children
           (tag
-            (tag_name))))))
+            (tag_name)
+            (children
+              (tag
+                (tag_name))))))))
   (tag
     (tag_name)))
 
@@ -155,11 +157,12 @@ tag
             (tag_name))))
       (block_use
         (keyword)
-        (block_name))
-      (tag
-        (tag_name)
+        (block_name)
         (children
           (tag
-            (tag_name))))))
+            (tag_name)
+            (children
+              (tag
+                (tag_name))))))))
   (tag
     (tag_name)))
