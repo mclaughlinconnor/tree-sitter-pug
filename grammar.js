@@ -266,10 +266,7 @@ module.exports = grammar({
         "script.",
         $._newline,
         $._indent,
-        alias(
-          repeat1(seq(optional(anythingExceptNewlines), $._newline)),
-          $.javascript
-        ),
+        alias(repeat1(anythingExceptNewlines), $.javascript),
         $._dedent
       ),
     _interpolatable_tag: ($) =>
