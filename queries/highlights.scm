@@ -32,7 +32,7 @@
 ((tag
    (attributes
      (attribute (attribute_name) @keyword)))
- (#match? @keyword "^(:|v-bind|v-|\\@|(\\(.*\\)|\\[.*\\]|\\*.*)$)")) ; vue and angular
+ (#match? @keyword "^(:|v-bind|v-|\@|(\\(.*\\)|\\[.*\\]|\\*.*)$)")) ; vue and angular
 
 (keyword) @keyword
 
