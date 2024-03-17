@@ -1,4 +1,6 @@
+#include "tree_sitter/array.h"
 #include "tree_sitter/parser.h"
+
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -8,56 +10,15 @@ enum { TAB_WIDTH = 8 };
 
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
-#define VEC_RESIZE(vec, _cap)                                                  \
-  void *tmp = realloc((vec).data, (_cap) * sizeof((vec).data[0]));             \
-  (vec).data = tmp;                                                            \
-  (vec).cap = (_cap);
-
-#define VEC_GROW(vec, _cap)                                                    \
-  if ((vec).cap < (_cap)) {                                                    \
-    VEC_RESIZE((vec), (_cap));                                                 \
-  }
-
-#define VEC_PUSH(vec, el)                                                      \
-  if ((vec).cap == (vec).len) {                                                \
-    VEC_RESIZE((vec), MAX(16, (vec).len * 2));                                 \
-  }                                                                            \
-  (vec).data[(vec).len++] = (el);
-
-#define VEC_POP(vec) (vec).len--;
-
-#define VEC_NEW                                                                \
-  { .len = 0, .cap = 0, .data = NULL }
-
-#define VEC_BACK(vec) ((vec).data[(vec).len - 1])
-
-#define VEC_FREE(vec)                                                          \
-  {                                                                            \
-    if ((vec).data != NULL)                                                    \
-      free((vec).data);                                                        \
-  }
-
-#define VEC_CLEAR(vec) (vec).len = 0;
-
 enum TokenType {
   NEWLINE,
   INDENT,
   DEDENT,
   JS_ATTR,
+  ERROR,
 };
 
-typedef struct {
-  uint32_t len;
-  uint32_t cap;
-  uint16_t *data;
-} stack;
-
-static stack stack_new() {
-  stack vec = VEC_NEW;
-  vec.data = calloc(1, sizeof(uint16_t));
-  vec.cap = 1;
-  return vec;
-}
+typedef Array(uint16_t) stack;
 
 typedef struct {
   stack indents;
@@ -71,12 +32,12 @@ static inline void advance(TSLexer *lexer) { lexer->advance(lexer, false); }
 
 static inline void skip(TSLexer *lexer) { lexer->advance(lexer, true); }
 
-void serialize_stack(size_t *size, char *buffer, stack *stack) {
-  buffer[(*size)++] = (char)stack->len;
+static void serialize_stack(size_t *size, char *buffer, stack *stack) {
+  buffer[(*size)++] = (char)stack->size;
   for (uint32_t iter = 1;
-       iter < stack->len && *size < TREE_SITTER_SERIALIZATION_BUFFER_SIZE;
+       iter < stack->size && *size < TREE_SITTER_SERIALIZATION_BUFFER_SIZE;
        ++iter) {
-    buffer[(*size)++] = (char)stack->data[iter];
+    buffer[(*size)++] = (char)stack->contents[iter];
   }
 }
 
@@ -94,12 +55,12 @@ unsigned tree_sitter_pug_external_scanner_serialize(void *payload,
   return size;
 }
 
-void deserialize_stack(int *index, const char *buffer, stack *stack) {
+static void deserialize_stack(int *index, const char *buffer, stack *stack) {
   int stack_size = (unsigned char)buffer[*index];
   (*index)++;
 
   while (*index < stack_size) {
-    VEC_PUSH(*stack, (unsigned char)buffer[*index]);
+    array_push(&*stack, (unsigned char)buffer[*index]);
     (*index)++;
   }
 }
@@ -108,17 +69,18 @@ void tree_sitter_pug_external_scanner_deserialize(void *payload,
                                                   const char *buffer,
                                                   unsigned length) {
   Scanner *scanner = (Scanner *)payload;
-  VEC_CLEAR(scanner->indents);
-  VEC_PUSH(scanner->indents, 0);
+  array_delete(&scanner->indents);
+  array_push(&scanner->indents, 0);
 
-  VEC_CLEAR(scanner->parens);
-  VEC_PUSH(scanner->parens, 0);
+  array_delete(&scanner->parens);
+  array_push(&scanner->parens, 0);
 
-  VEC_CLEAR(scanner->tern_qmark_depth);
-  VEC_PUSH(scanner->tern_qmark_depth, 0);
+  array_delete(&scanner->tern_qmark_depth);
+  array_push(&scanner->tern_qmark_depth, 0);
 
   if (length > 0) {
     int index = 0;
+
     deserialize_stack(&index, buffer, &scanner->indents);
     deserialize_stack(&index, buffer, &scanner->parens);
     deserialize_stack(&index, buffer, &scanner->tern_qmark_depth);
@@ -132,9 +94,9 @@ void tree_sitter_pug_external_scanner_deserialize(void *payload,
 void *tree_sitter_pug_external_scanner_create() {
   Scanner *scanner = calloc(1, sizeof(Scanner));
 
-  scanner->indents = stack_new();
-  scanner->parens = stack_new();
-  scanner->tern_qmark_depth = stack_new();
+  array_init(&scanner->indents);
+  array_init(&scanner->parens);
+  array_init(&scanner->tern_qmark_depth);
 
   tree_sitter_pug_external_scanner_deserialize(scanner, NULL, 0);
 
@@ -144,10 +106,10 @@ void *tree_sitter_pug_external_scanner_create() {
 /**
  * Returns true if the quote character is actually a JavaScript template quote.
  */
-bool is_template_quote(char c) { return c == '`'; }
+static bool is_template_quote(char c) { return c == '`'; }
 
 /** Return true if a character is a quote, false otherwise */
-bool is_quote(char c) {
+static bool is_quote(char c) {
   switch (c) {
   case '"':
   case '\'':
@@ -159,7 +121,7 @@ bool is_quote(char c) {
 }
 
 /** Return true if a bracket is a opening one, false otherwise */
-bool is_open_bracket(char bracket) {
+static bool is_open_bracket(char bracket) {
   switch (bracket) {
   case '(':
   case '[':
@@ -171,7 +133,7 @@ bool is_open_bracket(char bracket) {
 }
 
 /** Return true if a bracket is a closing one, false otherwise */
-bool is_close_bracket(char bracket) {
+static bool is_close_bracket(char bracket) {
   switch (bracket) {
   case ')':
   case ']':
@@ -183,7 +145,7 @@ bool is_close_bracket(char bracket) {
 }
 
 /** Switch a bracket from opening to closing or from closing to opening */
-char switch_bracket(char bracket) {
+static char switch_bracket(char bracket) {
   switch (bracket) {
   case '"':
     return '"';
@@ -207,7 +169,7 @@ char switch_bracket(char bracket) {
 }
 
 /** Operators that are allowed outside of any brackets (at the very root) */
-bool is_root_operator(char c) {
+static bool is_root_operator(char c) {
   switch (c) {
   case '$':
   case '&':
@@ -232,7 +194,7 @@ bool is_root_operator(char c) {
 }
 
 /** Operators that are allowed outside the root */
-bool is_operator(char c) {
+static bool is_operator(char c) {
   if (is_root_operator(c)) {
     return true;
   }
@@ -249,29 +211,31 @@ bool is_operator(char c) {
  * We're in a string if the most recent paren is a quote and the
  * current character isn't a quote.
  */
-bool is_in_string(char c, Scanner *scanner) {
-  return is_quote(VEC_BACK(scanner->parens)) && !is_quote(c);
+static bool is_in_string(char c, Scanner *scanner) {
+  return is_quote((char)*array_back(&scanner->parens)) && !is_quote(c);
 }
 
 /**
  * We're in parens if the top of the parens stack has is not 0.
  */
-bool is_in_parens(Scanner *scanner) { return VEC_BACK(scanner->parens) != 0; }
+static bool is_in_parens(Scanner *scanner) {
+  return (char)*array_back(&scanner->parens) != 0;
+}
 
 /**
  * A valid attribute has been found if lexer->result_symbol is JS_ATTR.
  */
-bool is_attr_found(TSLexer *lexer, Scanner *scanner) {
+static bool is_attr_found(TSLexer *lexer, Scanner *scanner) {
   return (lexer->result_symbol == JS_ATTR && !scanner->is_string_attr);
 }
 
 /** Simply advance the lexer and unmark operator pending */
-void handle_alphanumeric(Scanner *scanner, TSLexer *lexer) {
+static void handle_alphanumeric(Scanner *scanner, TSLexer *lexer) {
   scanner->operator_pending = false;
   advance(lexer);
 
   scanner->is_string_attr =
-      scanner->is_string_attr && is_quote(VEC_BACK(scanner->parens));
+      scanner->is_string_attr && is_quote((char)*array_back(&scanner->parens));
 }
 
 /**
@@ -279,11 +243,11 @@ void handle_alphanumeric(Scanner *scanner, TSLexer *lexer) {
  * as the current character), then the quote is a closing one, otherwise
  * it's an opening one.
  */
-void handle_quote(Scanner *scanner, TSLexer *lexer) {
-  if (VEC_BACK(scanner->parens) == lexer->lookahead) {
-    VEC_POP(scanner->parens);
+static void handle_quote(Scanner *scanner, TSLexer *lexer) {
+  if ((char)*array_back(&scanner->parens) == lexer->lookahead) {
+    array_pop(&scanner->parens);
   } else {
-    VEC_PUSH(scanner->parens, lexer->lookahead);
+    array_push(&scanner->parens, lexer->lookahead);
   }
 
   if (lexer->lookahead == '`') {
@@ -294,9 +258,9 @@ void handle_quote(Scanner *scanner, TSLexer *lexer) {
 }
 
 /** Opening parens unmark operator pending, then get pushed to the stack */
-void handle_open_bracket(Scanner *scanner, TSLexer *lexer) {
+static void handle_open_bracket(Scanner *scanner, TSLexer *lexer) {
   scanner->operator_pending = false;
-  VEC_PUSH(scanner->parens, lexer->lookahead);
+  array_push(&scanner->parens, lexer->lookahead);
 
   scanner->is_string_attr = false;
 
@@ -312,12 +276,13 @@ void handle_open_bracket(Scanner *scanner, TSLexer *lexer) {
  * scanner->parens stack. If a matching bracket is not found on top of the
  * stack, mark the end of the token, and return `false`.
  */
-bool handle_close_backet(Scanner *scanner, TSLexer *lexer) {
+static bool handle_close_backet(Scanner *scanner, TSLexer *lexer) {
   scanner->operator_pending = false;
 
-  if (VEC_BACK(scanner->parens) == switch_bracket((char)lexer->lookahead)) {
+  if ((char)*array_back(&scanner->parens) ==
+      switch_bracket((char)lexer->lookahead)) {
     lexer->result_symbol = JS_ATTR;
-    VEC_POP(scanner->parens);
+    array_pop(&scanner->parens);
     advance(lexer);
 
     scanner->is_string_attr = false;
@@ -333,7 +298,7 @@ bool handle_close_backet(Scanner *scanner, TSLexer *lexer) {
  * If an operator character is found (e.g., '+' or '-'), then we have to look
  * for a second operand after it, so mark operator pending.
  */
-void handle_operator(Scanner *scanner, TSLexer *lexer) {
+static void handle_operator(Scanner *scanner, TSLexer *lexer) {
   lexer->result_symbol = JS_ATTR;
   scanner->operator_pending = true;
   scanner->is_string_attr = false;
@@ -346,20 +311,21 @@ void handle_operator(Scanner *scanner, TSLexer *lexer) {
  * `tag(attr=a:1)`. If there was an "opening" question mark at the same paren
  * level as we've just found a colon, then we've got a valid ternary.
  */
-bool handle_root_operator(Scanner *scanner, TSLexer *lexer) {
+static bool handle_root_operator(Scanner *scanner, TSLexer *lexer) {
   char c = (char)lexer->lookahead;
   lexer->result_symbol = JS_ATTR;
 
   if (c == '?') {
-    VEC_PUSH(scanner->tern_qmark_depth, scanner->parens.len)
+    array_push(&scanner->tern_qmark_depth, scanner->parens.size);
   }
 
   if (c == ':') {
-    if (VEC_BACK(scanner->tern_qmark_depth) != (scanner->parens).len) {
+    if ((char)*array_back(&scanner->tern_qmark_depth) !=
+        (scanner->parens).size) {
       lexer->mark_end(lexer);
       return true;
     }
-    VEC_POP(scanner->tern_qmark_depth);
+    array_pop(&scanner->tern_qmark_depth);
   }
 
   scanner->operator_pending = true;
@@ -373,7 +339,7 @@ bool handle_root_operator(Scanner *scanner, TSLexer *lexer) {
  * If the character following whitespace is not an operator and we're not
  * looking for an operator, then we've found some other term.
  */
-bool is_intra_term_spacing(Scanner *scanner, TSLexer *lexer) {
+static bool is_intra_term_spacing(Scanner *scanner, TSLexer *lexer) {
   char c = (char)lexer->lookahead;
   return !is_operator(c) && !is_root_operator(c) && !scanner->operator_pending;
 }
@@ -383,7 +349,7 @@ bool is_intra_term_spacing(Scanner *scanner, TSLexer *lexer) {
  * (i.e., `tag(attr=1 + 2)`), then mark the end of the token and whether
  * a valid attribute was found
  */
-bool handle_whitespace(Scanner *scanner, TSLexer *lexer) {
+static bool handle_whitespace(Scanner *scanner, TSLexer *lexer) {
   lexer->mark_end(lexer);
   while ((lexer->lookahead == ' ' || lexer->lookahead == '\t')) {
     advance(lexer);
@@ -402,11 +368,11 @@ bool handle_whitespace(Scanner *scanner, TSLexer *lexer) {
  * A character is a valid string character if it's alphanumeric or
  * we're ina a quote
  */
-bool is_valid_alpha(char c, Scanner *scanner) {
+static bool is_valid_alpha(char c, Scanner *scanner) {
   return iswalpha(c) || iswdigit(c) || is_in_string(c, scanner) || c == '_';
 }
 
-bool handle_attr(Scanner *scanner, TSLexer *lexer) {
+static bool handle_attr(Scanner *scanner, TSLexer *lexer) {
   while ((lexer->lookahead == ' ' || lexer->lookahead == '\t')) {
     skip(lexer);
   }
@@ -478,57 +444,61 @@ bool tree_sitter_pug_external_scanner_scan(void *payload, TSLexer *lexer,
                                            const bool *valid_symbols) {
   Scanner *scanner = (Scanner *)payload;
 
-  if (lexer->lookahead == '\n') {
-    if (valid_symbols[NEWLINE]) {
-      skip(lexer);
-      lexer->result_symbol = NEWLINE;
-      return true;
-    }
-  }
+  bool error_recovery_mode = valid_symbols[ERROR];
 
-  if (lexer->lookahead && (valid_symbols[INDENT] || valid_symbols[DEDENT]) &&
-      lexer->get_column(lexer) == 0) {
-    uint32_t starting_column = 0;
-    uint32_t indent_length = 0;
+  lexer->mark_end(lexer);
 
-    // Indent tokens are zero width
-    lexer->mark_end(lexer);
-
-    for (;;) {
-      if (lexer->lookahead == ' ') {
-        indent_length++;
-        skip(lexer);
-      } else if (lexer->lookahead == '\t') {
-        indent_length += TAB_WIDTH;
-        skip(lexer);
-      } else {
-        break;
-      }
-    }
-
-    if (indent_length > VEC_BACK(scanner->indents) && valid_symbols[INDENT] &&
-        starting_column == 0) {
-      VEC_PUSH(scanner->indents, indent_length);
-      lexer->result_symbol = INDENT;
-      return true;
-    }
-
-    if (indent_length < VEC_BACK(scanner->indents) && valid_symbols[DEDENT]) {
-      VEC_POP(scanner->indents);
-      lexer->result_symbol = DEDENT;
-      return true;
-    }
-  }
-
-  if (valid_symbols[JS_ATTR]) {
+  if (valid_symbols[JS_ATTR] && !error_recovery_mode) {
     return handle_attr(scanner, lexer);
   }
 
-  // If a token is expecting a DEDENT to end, it's still valid if we've
-  // reached the end insetad.
-  if (valid_symbols[DEDENT] && lexer->eof(lexer)) {
-    lexer->result_symbol = DEDENT;
-    return true;
+  bool found_end_of_line = false;
+  uint32_t indent_length = 0;
+  for (;;) {
+    if (lexer->lookahead == '\n') {
+      found_end_of_line = true;
+      indent_length = 0;
+      skip(lexer);
+    } else if (lexer->lookahead == ' ') {
+      indent_length++;
+      skip(lexer);
+    } else if (lexer->lookahead == '\r' || lexer->lookahead == '\f') {
+      indent_length = 0;
+      skip(lexer);
+    } else if (lexer->lookahead == '\t') {
+      indent_length += 8;
+      skip(lexer);
+    } else if (lexer->eof(lexer)) {
+      indent_length = 0;
+      found_end_of_line = true;
+      break;
+    } else {
+      break;
+    }
+  }
+
+  if (found_end_of_line) {
+    if (scanner->indents.size > 0) {
+      uint16_t current_indent_length = *array_back(&scanner->indents);
+
+      if (valid_symbols[INDENT] && indent_length > current_indent_length) {
+        array_push(&scanner->indents, indent_length);
+        lexer->result_symbol = INDENT;
+        return true;
+      }
+
+      if ((valid_symbols[DEDENT] || !valid_symbols[NEWLINE]) &&
+          indent_length < current_indent_length) {
+        array_pop(&scanner->indents);
+        lexer->result_symbol = DEDENT;
+        return true;
+      }
+    }
+
+    if (valid_symbols[NEWLINE] && !error_recovery_mode) {
+      lexer->result_symbol = NEWLINE;
+      return true;
+    }
   }
 
   return false;
@@ -536,8 +506,8 @@ bool tree_sitter_pug_external_scanner_scan(void *payload, TSLexer *lexer,
 
 void tree_sitter_pug_external_scanner_destroy(void *payload) {
   Scanner *scanner = (Scanner *)payload;
-  VEC_FREE(scanner->indents);
-  VEC_FREE(scanner->parens);
-  VEC_FREE(scanner->tern_qmark_depth);
+  array_delete(&scanner->indents);
+  array_delete(&scanner->parens);
+  array_delete(&scanner->tern_qmark_depth);
   free(scanner);
 }

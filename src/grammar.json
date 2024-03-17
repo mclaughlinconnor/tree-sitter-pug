@@ -2410,6 +2410,10 @@
     {
       "type": "SYMBOL",
       "name": "_attr_js"
+    },
+    {
+      "type": "SYMBOL",
+      "name": "_error"
     }
   ],
   "inline": [],

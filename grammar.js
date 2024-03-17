@@ -50,7 +50,7 @@ const wordDelimiters = [
 
 module.exports = grammar({
   name: "pug",
-  externals: ($) => [$._newline, $._indent, $._dedent, $._attr_js],
+  externals: ($) => [$._newline, $._indent, $._dedent, $._attr_js, $._error],
   rules: {
     source_file: ($) =>
       repeat(
