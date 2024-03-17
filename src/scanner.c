@@ -1,7 +1,7 @@
 #include "tree_sitter/parser.h"
+#include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stddef.h>
 #include <wctype.h>
 
 enum { TAB_WIDTH = 8 };
