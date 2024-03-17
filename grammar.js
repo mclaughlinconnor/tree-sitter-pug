@@ -446,12 +446,7 @@ module.exports = grammar({
         seq(
           alias(anythingExceptNewlines, $.javascript),
           choice(
-            seq(
-              $._newline,
-              $._indent,
-              repeat1(choice($.tag, $._newline)),
-              $._dedent
-            ),
+            seq($._newline, $._indent, repeat1($.tag), $._dedent),
             $._newline
           )
         )
@@ -467,10 +462,7 @@ module.exports = grammar({
               $._newline,
               $._indent,
               seq(
-                alias(
-                  repeat1(seq(anythingExceptNewlines, $._newline)),
-                  $.javascript
-                ),
+                alias(repeat1(anythingExceptNewlines), $.javascript),
                 $._dedent
               )
             )

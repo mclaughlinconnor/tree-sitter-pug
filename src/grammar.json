@@ -2264,17 +2264,8 @@
                   {
                     "type": "REPEAT1",
                     "content": {
-                      "type": "CHOICE",
-                      "members": [
-                        {
-                          "type": "SYMBOL",
-                          "name": "tag"
-                        },
-                        {
-                          "type": "SYMBOL",
-                          "name": "_newline"
-                        }
-                      ]
+                      "type": "SYMBOL",
+                      "name": "tag"
                     }
                   },
                   {
@@ -2348,17 +2339,8 @@
                         "content": {
                           "type": "REPEAT1",
                           "content": {
-                            "type": "SEQ",
-                            "members": [
-                              {
-                                "type": "PATTERN",
-                                "value": "[^\\n]+"
-                              },
-                              {
-                                "type": "SYMBOL",
-                                "name": "_newline"
-                              }
-                            ]
+                            "type": "PATTERN",
+                            "value": "[^\\n]+"
                           }
                         },
                         "named": true,
