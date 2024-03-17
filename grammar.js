@@ -295,26 +295,28 @@ module.exports = grammar({
         )
       ),
     tag: ($) =>
-      seq(
-        choice($.tag_name, $.id, $.class),
-        optional(repeat1(choice($.id, $.class))),
-        optional($.attributes),
-        alias(optional($._and_attributes), $.attributes),
-        optional(alias("/", $.self_close_slash)),
-        choice(
-          seq(":", $.tag),
-          $._content_after_dot,
-          seq(
-            optional(seq($._newline, $._indent)),
-            choice($.buffered_code, $.unescaped_buffered_code)
-          ),
-          seq(
-            choice(
-              optional(whitespace),
-              seq(whitespace, $._content_or_javascript)
+      prec.right(
+        seq(
+          choice($.tag_name, $.id, $.class),
+          optional(repeat1(choice($.id, $.class))),
+          optional($.attributes),
+          alias(optional($._and_attributes), $.attributes),
+          optional(alias("/", $.self_close_slash)),
+          choice(
+            seq(":", $.tag),
+            $._content_after_dot,
+            seq(
+              optional(seq($._newline, $._indent)),
+              choice($.buffered_code, $.unescaped_buffered_code)
             ),
-            $._newline,
-            optional($.children)
+            seq(
+              choice(
+                optional(whitespace),
+                seq(whitespace, $._content_or_javascript)
+              ),
+              $._newline,
+              optional($.children)
+            )
           )
         )
       ),
@@ -349,14 +351,7 @@ module.exports = grammar({
     _and_attributes: ($) =>
       seq("&attributes(", optional(alias($._attr_js, $.javascript)), ")"),
     children: ($) =>
-      prec.right(
-        seq(
-          $._indent,
-          repeat1($._children_choice),
-          optional($._newline),
-          $._dedent
-        )
-      ),
+      prec.left(seq($._indent, repeat1($._children_choice), $._dedent)),
     _children_choice: ($) =>
       prec(
         1,
@@ -379,8 +374,7 @@ module.exports = grammar({
           $.mixin_use,
           $.each,
           $.while,
-          $.include,
-          $._newline
+          $.include
         )
       ),
 
