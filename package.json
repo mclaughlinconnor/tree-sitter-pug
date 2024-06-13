@@ -1,6 +1,6 @@
 {
   "name": "tree-sitter-pug",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "",
   "main": "bindings/node",
   "types": "bindings/node",
@@ -29,7 +29,7 @@
   },
   "devDependencies": {
     "prettier": "^2.3.2",
-    "tree-sitter-cli": "^0.22.6",
+    "tree-sitter-cli": "^0.21.0",
     "prebuildify": "^6.0.0"
   },
   "tree-sitter": [
