@@ -1,6 +1,6 @@
 {
   "name": "tree-sitter-pug",
-  "version": "1.0.9",
+  "version": "1.0.10",
   "description": "",
   "main": "bindings/node",
   "types": "bindings/node",
@@ -16,7 +16,6 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "nan": "^2.20.0",
     "node-addon-api": "^7.1.0",
     "node-gyp-build": "^4.8.0"
   },
