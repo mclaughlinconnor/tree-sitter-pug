@@ -12,7 +12,7 @@ prettier@^2.3.2:
   resolved "https://registry.npmjs.org/prettier/-/prettier-2.3.2.tgz"
   integrity sha512-lnJzDfJ66zkMy58OL5/NY5zp70S7Nz6KqcKkXYzn2tMVrNxvbqaBpg7H3qHaLxCJ5lNMsGuM8+ohS7cZrthdLQ==
 
-tree-sitter-cli@^0.20.8:
-  version "0.20.8"
-  resolved "https://registry.npmjs.org/tree-sitter-cli/-/tree-sitter-cli-0.20.8.tgz"
-  integrity sha512-XjTcS3wdTy/2cc/ptMLc/WRyOLECRYcMTrSWyhZnj1oGSOWbHLTklgsgRICU3cPfb0vy+oZCC33M43u6R1HSCA==
+tree-sitter-cli@^0.22.6:
+  version "0.22.6"
+  resolved "https://registry.npmjs.org/tree-sitter-cli/-/tree-sitter-cli-0.22.6.tgz"
+  integrity sha512-s7mYOJXi8sIFkt/nLJSqlYZP96VmKTc3BAwIX0rrrlRxWjWuCwixFqwzxWZBQz4R8Hx01iP7z3cT3ih58BUmZQ==

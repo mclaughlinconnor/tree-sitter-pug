@@ -71,7 +71,7 @@ static inline void advance(TSLexer *lexer) { lexer->advance(lexer, false); }
 
 static inline void skip(TSLexer *lexer) { lexer->advance(lexer, true); }
 
-void serialize_stack(size_t *size, char *buffer, stack *stack) {
+static void serialize_stack(size_t *size, char *buffer, stack *stack) {
   buffer[(*size)++] = (char)stack->len;
   for (uint32_t iter = 1;
        iter < stack->len && *size < TREE_SITTER_SERIALIZATION_BUFFER_SIZE;
@@ -94,7 +94,7 @@ unsigned tree_sitter_pug_external_scanner_serialize(void *payload,
   return size;
 }
 
-void deserialize_stack(int *index, const char *buffer, stack *stack) {
+static void deserialize_stack(int *index, const char *buffer, stack *stack) {
   int stack_size = (unsigned char)buffer[*index];
   (*index)++;
 
@@ -144,10 +144,10 @@ void *tree_sitter_pug_external_scanner_create() {
 /**
  * Returns true if the quote character is actually a JavaScript template quote.
  */
-bool is_template_quote(char c) { return c == '`'; }
+static bool is_template_quote(char c) { return c == '`'; }
 
 /** Return true if a character is a quote, false otherwise */
-bool is_quote(char c) {
+static bool is_quote(char c) {
   switch (c) {
   case '"':
   case '\'':
@@ -159,7 +159,7 @@ bool is_quote(char c) {
 }
 
 /** Return true if a bracket is a opening one, false otherwise */
-bool is_open_bracket(char bracket) {
+static bool is_open_bracket(char bracket) {
   switch (bracket) {
   case '(':
   case '[':
@@ -171,7 +171,7 @@ bool is_open_bracket(char bracket) {
 }
 
 /** Return true if a bracket is a closing one, false otherwise */
-bool is_close_bracket(char bracket) {
+static bool is_close_bracket(char bracket) {
   switch (bracket) {
   case ')':
   case ']':
@@ -183,7 +183,7 @@ bool is_close_bracket(char bracket) {
 }
 
 /** Switch a bracket from opening to closing or from closing to opening */
-char switch_bracket(char bracket) {
+static char switch_bracket(char bracket) {
   switch (bracket) {
   case '"':
     return '"';
@@ -207,7 +207,7 @@ char switch_bracket(char bracket) {
 }
 
 /** Operators that are allowed outside of any brackets (at the very root) */
-bool is_root_operator(char c) {
+static bool is_root_operator(char c) {
   switch (c) {
   case '$':
   case '&':
@@ -232,7 +232,7 @@ bool is_root_operator(char c) {
 }
 
 /** Operators that are allowed outside the root */
-bool is_operator(char c) {
+static bool is_operator(char c) {
   if (is_root_operator(c)) {
     return true;
   }
@@ -249,24 +249,24 @@ bool is_operator(char c) {
  * We're in a string if the most recent paren is a quote and the
  * current character isn't a quote.
  */
-bool is_in_string(char c, Scanner *scanner) {
+static bool is_in_string(char c, Scanner *scanner) {
   return is_quote(VEC_BACK(scanner->parens)) && !is_quote(c);
 }
 
 /**
  * We're in parens if the top of the parens stack has is not 0.
  */
-bool is_in_parens(Scanner *scanner) { return VEC_BACK(scanner->parens) != 0; }
+static bool is_in_parens(Scanner *scanner) { return VEC_BACK(scanner->parens) != 0; }
 
 /**
  * A valid attribute has been found if lexer->result_symbol is JS_ATTR.
  */
-bool is_attr_found(TSLexer *lexer, Scanner *scanner) {
+static bool is_attr_found(TSLexer *lexer, Scanner *scanner) {
   return (lexer->result_symbol == JS_ATTR && !scanner->is_string_attr);
 }
 
 /** Simply advance the lexer and unmark operator pending */
-void handle_alphanumeric(Scanner *scanner, TSLexer *lexer) {
+static void handle_alphanumeric(Scanner *scanner, TSLexer *lexer) {
   scanner->operator_pending = false;
   advance(lexer);
 
@@ -279,7 +279,7 @@ void handle_alphanumeric(Scanner *scanner, TSLexer *lexer) {
  * as the current character), then the quote is a closing one, otherwise
  * it's an opening one.
  */
-void handle_quote(Scanner *scanner, TSLexer *lexer) {
+static void handle_quote(Scanner *scanner, TSLexer *lexer) {
   if (VEC_BACK(scanner->parens) == lexer->lookahead) {
     VEC_POP(scanner->parens);
   } else {
@@ -294,7 +294,7 @@ void handle_quote(Scanner *scanner, TSLexer *lexer) {
 }
 
 /** Opening parens unmark operator pending, then get pushed to the stack */
-void handle_open_bracket(Scanner *scanner, TSLexer *lexer) {
+static void handle_open_bracket(Scanner *scanner, TSLexer *lexer) {
   scanner->operator_pending = false;
   VEC_PUSH(scanner->parens, lexer->lookahead);
 
@@ -312,7 +312,7 @@ void handle_open_bracket(Scanner *scanner, TSLexer *lexer) {
  * scanner->parens stack. If a matching bracket is not found on top of the
  * stack, mark the end of the token, and return `false`.
  */
-bool handle_close_backet(Scanner *scanner, TSLexer *lexer) {
+static bool handle_close_backet(Scanner *scanner, TSLexer *lexer) {
   scanner->operator_pending = false;
 
   if (VEC_BACK(scanner->parens) == switch_bracket((char)lexer->lookahead)) {
@@ -333,7 +333,7 @@ bool handle_close_backet(Scanner *scanner, TSLexer *lexer) {
  * If an operator character is found (e.g., '+' or '-'), then we have to look
  * for a second operand after it, so mark operator pending.
  */
-void handle_operator(Scanner *scanner, TSLexer *lexer) {
+static void handle_operator(Scanner *scanner, TSLexer *lexer) {
   lexer->result_symbol = JS_ATTR;
   scanner->operator_pending = true;
   scanner->is_string_attr = false;
@@ -346,7 +346,7 @@ void handle_operator(Scanner *scanner, TSLexer *lexer) {
  * `tag(attr=a:1)`. If there was an "opening" question mark at the same paren
  * level as we've just found a colon, then we've got a valid ternary.
  */
-bool handle_root_operator(Scanner *scanner, TSLexer *lexer) {
+static bool handle_root_operator(Scanner *scanner, TSLexer *lexer) {
   char c = (char)lexer->lookahead;
   lexer->result_symbol = JS_ATTR;
 
@@ -373,7 +373,7 @@ bool handle_root_operator(Scanner *scanner, TSLexer *lexer) {
  * If the character following whitespace is not an operator and we're not
  * looking for an operator, then we've found some other term.
  */
-bool is_intra_term_spacing(Scanner *scanner, TSLexer *lexer) {
+static bool is_intra_term_spacing(Scanner *scanner, TSLexer *lexer) {
   char c = (char)lexer->lookahead;
   return !is_operator(c) && !is_root_operator(c) && !scanner->operator_pending;
 }
@@ -383,7 +383,7 @@ bool is_intra_term_spacing(Scanner *scanner, TSLexer *lexer) {
  * (i.e., `tag(attr=1 + 2)`), then mark the end of the token and whether
  * a valid attribute was found
  */
-bool handle_whitespace(Scanner *scanner, TSLexer *lexer) {
+static bool handle_whitespace(Scanner *scanner, TSLexer *lexer) {
   lexer->mark_end(lexer);
   while ((lexer->lookahead == ' ' || lexer->lookahead == '\t')) {
     advance(lexer);
@@ -402,11 +402,11 @@ bool handle_whitespace(Scanner *scanner, TSLexer *lexer) {
  * A character is a valid string character if it's alphanumeric or
  * we're ina a quote
  */
-bool is_valid_alpha(char c, Scanner *scanner) {
+static bool is_valid_alpha(char c, Scanner *scanner) {
   return iswalpha(c) || iswdigit(c) || is_in_string(c, scanner) || c == '_';
 }
 
-bool handle_attr(Scanner *scanner, TSLexer *lexer) {
+static bool handle_attr(Scanner *scanner, TSLexer *lexer) {
   while ((lexer->lookahead == ' ' || lexer->lookahead == '\t')) {
     skip(lexer);
   }
