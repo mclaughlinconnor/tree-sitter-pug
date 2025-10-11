@@ -51,6 +51,12 @@ const wordDelimiters = [
 module.exports = grammar({
   name: "pug",
   externals: ($) => [$._newline, $._indent, $._dedent, $._attr_js],
+
+  conflicts: $ => [
+    [$.tag],
+    [$._interpolatable_tag],
+  ],
+
   rules: {
     source_file: ($) =>
       repeat(
@@ -277,6 +283,9 @@ module.exports = grammar({
           choice($.tag_name, $.id, $.class),
           optional(repeat1(choice($.id, $.class))),
           optional($.attributes),
+          optional(repeat1(choice($.id, $.class))),
+          alias(optional($._and_attributes), $.attributes),
+          optional(repeat1(choice($.id, $.class))),
           optional(alias("/", $.self_close_slash)),
           choice(
             seq(":", $.tag),
@@ -299,7 +308,9 @@ module.exports = grammar({
         choice($.tag_name, $.id, $.class),
         optional(repeat1(choice($.id, $.class))),
         optional($.attributes),
+        optional(repeat1(choice($.id, $.class))),
         alias(optional($._and_attributes), $.attributes),
+        optional(repeat1(choice($.id, $.class))),
         optional(alias("/", $.self_close_slash)),
         choice(
           seq(":", $.tag),
